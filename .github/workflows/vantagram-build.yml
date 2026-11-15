@@ -46,9 +46,13 @@ jobs:
           key: bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel.lock') }}
           restore-keys: bazel-${{ runner.os }}-
 
+      - name: Refresh expired fake provisioning profiles
+        run: bash build-system/vantagram-refresh-profiles.sh build-system/fake-codesigning vantagram-codesigning
+
       - name: Build
         env:
-          VANTAGRAM_UNSIGNED: "1"
+          # Ad-hoc signing ("-"): no keychain identity needed; Sideloadly/AltStore re-sign anyway.
+          VANTAGRAM_BAZEL_ARGS: "--@build_bazel_rules_apple//apple/build_settings:signing_certificate_name=-"
         run: |
           set -o pipefail
           python3 build-system/Make/Make.py \
@@ -56,7 +60,7 @@ jobs:
             --cacheDir="$HOME/telegram-bazel-cache" \
             build \
             --configurationPath=vantagram-config.json \
-            --codesigningInformationPath=build-system/fake-codesigning \
+            --codesigningInformationPath=vantagram-codesigning \
             --buildNumber=1 \
             --configuration=release_arm64 > build.log 2>&1 || {
               echo "---- first errors ----"

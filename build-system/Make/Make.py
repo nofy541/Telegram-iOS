@@ -321,6 +321,11 @@ class BazelCommandLine:
         if self.profile_swift:
             combined_arguments += ['--config=swift_profile']
 
+        # Vantagram: extra bazel arguments from the environment (e.g. ad-hoc signing for sideloading).
+        extra_bazel_args = os.environ.get('VANTAGRAM_BAZEL_ARGS')
+        if extra_bazel_args:
+            combined_arguments += shlex.split(extra_bazel_args)
+
         print('TelegramBuild: running')
         print(subprocess.list2cmdline(combined_arguments))
         call_executable(combined_arguments)
@@ -689,10 +694,6 @@ def build(bazel, arguments):
     bazel_command_line.set_profile_swift(arguments.profileSwift)
 
     bazel_command_line.set_split_swiftmodules(arguments.enableParallelSwiftmoduleGeneration)
-
-    # Vantagram: build an unsigned IPA (for sideloading) without provisioning profiles.
-    if os.environ.get('VANTAGRAM_UNSIGNED') == '1':
-        bazel_command_line.set_disable_provisioning_profiles()
 
     bazel_command_line.invoke_build()
 
