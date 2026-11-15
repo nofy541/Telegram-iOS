@@ -47,6 +47,8 @@ jobs:
           restore-keys: bazel-${{ runner.os }}-
 
       - name: Build
+        env:
+          VANTAGRAM_UNSIGNED: "1"
         run: |
           set -o pipefail
           python3 build-system/Make/Make.py \
@@ -57,19 +59,20 @@ jobs:
             --codesigningInformationPath=build-system/fake-codesigning \
             --buildNumber=1 \
             --configuration=release_arm64 > build.log 2>&1 || {
-              msg=$(grep -m1 -A25 "ERROR:" build.log | cut -c1-500 | sed ':a;N;$!ba;s/\n/%0A/g')
-              echo "::error title=Build failed::$msg"
-              msg2=$(tail -n 15 build.log | cut -c1-300 | sed ':a;N;$!ba;s/\n/%0A/g')
-              echo "::error title=Log tail::$msg2"
+              echo "---- first errors ----"
+              grep -m1 -A25 "ERROR:" build.log | cut -c1-500
+              echo "---- tail ----"
+              tail -n 15 build.log | cut -c1-300
               df -h / | tail -1
               exit 1
             }
 
       - name: Locate IPA
         run: |
-          find . -name "*.ipa" -not -path "./node_modules/*" | head
+          ls -la bazel-bin/Telegram/*.ipa
           mkdir -p out
-          cp "$(find . -name '*.ipa' | head -n1)" out/Vantagram-unsigned.ipa
+          cp bazel-bin/Telegram/Telegram.ipa out/Vantagram-unsigned.ipa
+          ls -la out
 
       - uses: actions/upload-artifact@v4
         with:

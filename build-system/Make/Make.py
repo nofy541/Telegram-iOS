@@ -690,6 +690,10 @@ def build(bazel, arguments):
 
     bazel_command_line.set_split_swiftmodules(arguments.enableParallelSwiftmoduleGeneration)
 
+    # Vantagram: build an unsigned IPA (for sideloading) without provisioning profiles.
+    if os.environ.get('VANTAGRAM_UNSIGNED') == '1':
+        bazel_command_line.set_disable_provisioning_profiles()
+
     bazel_command_line.invoke_build()
 
     if arguments.outputBuildArtifactsPath is not None:
