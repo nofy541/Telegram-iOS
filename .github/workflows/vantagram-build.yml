@@ -24,10 +24,10 @@ jobs:
         run: |
           cat > vantagram-config.json <<EOF
           {
-            "bundle_id": "app.vantagram.ios",
+            "bundle_id": "ph.telegra.Telegraph",
             "api_id": "$TG_API_ID",
             "api_hash": "$TG_API_HASH",
-            "team_id": "0000000000",
+            "team_id": "C67CF9S4VU",
             "app_center_id": "0",
             "is_internal_build": "true",
             "is_appstore_build": "false",
