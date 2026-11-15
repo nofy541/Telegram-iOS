@@ -57,7 +57,11 @@ jobs:
             --codesigningInformationPath=build-system/fake-codesigning \
             --buildNumber=1 \
             --configuration=release_arm64 > build.log 2>&1 || {
-              tail -n 60 build.log | while IFS= read -r l; do echo "::error::$l"; done
+              msg=$(grep -nE "ERROR|FAILED|error:|Killed|Terminated|No space|signal" build.log | tail -n 12 | cut -c1-300 | sed ':a;N;$!ba;s/\n/%0A/g')
+              echo "::error title=Build failed::$msg"
+              msg2=$(tail -n 15 build.log | cut -c1-300 | sed ':a;N;$!ba;s/\n/%0A/g')
+              echo "::error title=Log tail::$msg2"
+              df -h / | tail -1
               exit 1
             }
 
