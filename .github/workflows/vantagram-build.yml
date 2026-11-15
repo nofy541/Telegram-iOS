@@ -1,0 +1,79 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [vantagram]
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Select Xcode 26.6
+        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+
+      - name: Write build configuration
+        env:
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+        run: |
+          cat > vantagram-config.json <<EOF
+          {
+            "bundle_id": "app.vantagram.ios",
+            "api_id": "$TG_API_ID",
+            "api_hash": "$TG_API_HASH",
+            "team_id": "0000000000",
+            "is_internal_build": "true",
+            "is_appstore_build": "false",
+            "appstore_id": "0",
+            "app_specific_url_scheme": "tg",
+            "premium_iap_product_id": "",
+            "enable_siri": false,
+            "enable_icloud": false
+          }
+          EOF
+
+      - name: Cache Bazel
+        uses: actions/cache@v4
+        with:
+          path: ~/telegram-bazel-cache
+          key: bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel.lock') }}
+          restore-keys: bazel-${{ runner.os }}-
+
+      - name: Build
+        run: |
+          set -o pipefail
+          python3 build-system/Make/Make.py \
+            --overrideBazelVersion \
+            --cacheDir="$HOME/telegram-bazel-cache" \
+            build \
+            --configurationPath=vantagram-config.json \
+            --codesigningInformationPath=build-system/fake-codesigning \
+            --buildNumber=1 \
+            --configuration=release_arm64 > build.log 2>&1 || {
+              tail -n 60 build.log | while IFS= read -r l; do echo "::error::$l"; done
+              exit 1
+            }
+
+      - name: Locate IPA
+        run: |
+          find . -name "*.ipa" -not -path "./node_modules/*" | head
+          mkdir -p out
+          cp "$(find . -name '*.ipa' | head -n1)" out/Vantagram-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vantagram-unsigned-ipa
+          path: out/Vantagram-unsigned.ipa
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
