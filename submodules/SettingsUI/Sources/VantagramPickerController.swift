@@ -56,7 +56,7 @@ private enum VantagramPickerEntry: ItemListNodeEntry {
                 let configuration = UIImage.SymbolConfiguration(pointSize: 20.0, weight: .semibold)
                 iconImage = UIImage(systemName: symbol, withConfiguration: configuration)?.withTintColor(presentationData.theme.list.itemPrimaryTextColor, renderingMode: .alwaysOriginal)
             }
-            return ItemListCheckboxItem(presentationData: presentationData, systemStyle: .glass, icon: iconImage, iconSize: iconImage == nil ? nil : CGSize(width: 28.0, height: 28.0), title: title, style: .blocks, checked: checked, zeroSeparatorInsets: false, sectionId: self.section, action: {
+            return ItemListCheckboxItem(presentationData: presentationData, systemStyle: .glass, icon: iconImage, iconSize: iconImage == nil ? nil : CGSize(width: 28.0, height: 28.0), title: title, style: .left, checked: checked, zeroSeparatorInsets: false, sectionId: self.section, action: {
                 arguments.select(id)
             })
         case let .footer(text):
