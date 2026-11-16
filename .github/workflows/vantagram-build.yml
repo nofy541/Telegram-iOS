@@ -7,15 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-15
     timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Select Xcode 26.6
-        run: sudo xcode-select -s /Applications/Xcode_26.6.app/Contents/Developer
+      - name: Select Xcode 26.3
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
 
       - name: Write build configuration
         env:
@@ -57,6 +57,7 @@ jobs:
           set -o pipefail
           python3 build-system/Make/Make.py \
             --overrideBazelVersion \
+            --overrideXcodeVersion \
             --cacheDir="$HOME/telegram-bazel-cache" \
             build \
             --configurationPath=vantagram-config.json \
