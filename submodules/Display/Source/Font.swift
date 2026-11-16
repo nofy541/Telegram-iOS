@@ -288,21 +288,40 @@ public struct Font {
         }
     }
     
+    /// Vantagram: applies the chosen interface font design to a system font.
+    private static func vantagramStyled(_ font: UIFont) -> UIFont {
+        let design: UIFontDescriptor.SystemDesign
+        switch VantagramUI.fontDesign {
+        case "rounded":
+            design = .rounded
+        case "serif":
+            design = .serif
+        case "monospaced":
+            design = .monospaced
+        default:
+            return font
+        }
+        if let descriptor = font.fontDescriptor.withDesign(design) {
+            return UIFont(descriptor: descriptor, size: font.pointSize)
+        }
+        return font
+    }
+
     public static func regular(_ size: CGFloat) -> UIFont {
-        return UIFont.systemFont(ofSize: size)
+        return vantagramStyled(UIFont.systemFont(ofSize: size))
     }
     
     public static func medium(_ size: CGFloat) -> UIFont {
-        return UIFont.systemFont(ofSize: size, weight: UIFont.Weight.medium)
+        return vantagramStyled(UIFont.systemFont(ofSize: size, weight: UIFont.Weight.medium))
     }
     
     public static func semibold(_ size: CGFloat) -> UIFont {
-        return UIFont.systemFont(ofSize: size, weight: UIFont.Weight.semibold)
+        return vantagramStyled(UIFont.systemFont(ofSize: size, weight: UIFont.Weight.semibold))
     }
     
     public static func bold(_ size: CGFloat) -> UIFont {
         if #available(iOS 8.2, *) {
-            return UIFont.boldSystemFont(ofSize: size)
+            return vantagramStyled(UIFont.boldSystemFont(ofSize: size))
         } else {
             return CTFontCreateWithName("HelveticaNeue-Bold" as CFString, size, nil)
         }
@@ -313,7 +332,7 @@ public struct Font {
     }
     
     public static func light(_ size: CGFloat) -> UIFont {
-        return UIFont.systemFont(ofSize: size, weight: UIFont.Weight.light)
+        return vantagramStyled(UIFont.systemFont(ofSize: size, weight: UIFont.Weight.light))
     }
     
     public static func semiboldItalic(_ size: CGFloat) -> UIFont {
@@ -349,7 +368,7 @@ public struct Font {
     }
     
     public static func italic(_ size: CGFloat) -> UIFont {
-        return UIFont.italicSystemFont(ofSize: size)
+        return vantagramStyled(UIFont.italicSystemFont(ofSize: size))
     }
 }
 

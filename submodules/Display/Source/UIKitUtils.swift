@@ -38,6 +38,21 @@ public enum VantagramUI {
     public static func setGlassEnabled(_ value: Bool) {
         UserDefaults.standard.set(!value, forKey: glassKey)
     }
+
+    private static let fontKey = "vantagram.ui.fontDesign"
+
+    /// Interface font design: "default", "rounded", "serif" or "monospaced". Read once at launch,
+    /// so a change is applied after the app is restarted.
+    public static let fontDesign: String = UserDefaults.standard.string(forKey: fontKey) ?? "default"
+
+    /// Currently stored choice (may differ from `fontDesign` until the next launch).
+    public static var storedFontDesign: String {
+        return UserDefaults.standard.string(forKey: fontKey) ?? "default"
+    }
+
+    public static func setFontDesign(_ value: String) {
+        UserDefaults.standard.set(value, forKey: fontKey)
+    }
 }
 
 public func makeSpringAnimation(_ keyPath: String, duration: Double) -> CABasicAnimation {

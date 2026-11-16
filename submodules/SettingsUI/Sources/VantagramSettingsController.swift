@@ -32,6 +32,22 @@ private func vantagramDeletedIconTitle(_ symbol: String) -> String {
     return vantagramDeletedIconTitles[symbol] ?? symbol
 }
 
+private let vantagramFontChoices: [(String, String)] = [
+    ("default", "Системный"),
+    ("rounded", "Скруглённый"),
+    ("serif", "С засечками"),
+    ("monospaced", "Моноширинный")
+]
+
+private func vantagramFontTitle(_ id: String) -> String {
+    for item in vantagramFontChoices {
+        if item.0 == id {
+            return item.1
+        }
+    }
+    return "Системный"
+}
+
 private func vantagramAnimationSpeedTitle(_ factor: Double) -> String {
     var best = vantagramAnimationSpeeds[0]
     for item in vantagramAnimationSpeeds {
@@ -70,6 +86,7 @@ private final class VantagramSettingsArguments {
     let openDeletedAlpha: () -> Void
     let updateHideAds: (Bool) -> Void
     let openAnimationSpeed: () -> Void
+    let openFontDesign: () -> Void
     let updateNotchBadge: (Bool) -> Void
     let updateHidePremium: (Bool) -> Void
     let updateGlassEnabled: (Bool) -> Void
@@ -90,6 +107,7 @@ private final class VantagramSettingsArguments {
         openDeletedAlpha: @escaping () -> Void,
         updateHideAds: @escaping (Bool) -> Void,
         openAnimationSpeed: @escaping () -> Void,
+        openFontDesign: @escaping () -> Void,
         updateNotchBadge: @escaping (Bool) -> Void,
         updateHidePremium: @escaping (Bool) -> Void,
         updateGlassEnabled: @escaping (Bool) -> Void,
@@ -109,6 +127,7 @@ private final class VantagramSettingsArguments {
         self.openDeletedAlpha = openDeletedAlpha
         self.updateHideAds = updateHideAds
         self.openAnimationSpeed = openAnimationSpeed
+        self.openFontDesign = openFontDesign
         self.updateNotchBadge = updateNotchBadge
         self.updateHidePremium = updateHidePremium
         self.updateGlassEnabled = updateGlassEnabled
@@ -131,6 +150,7 @@ private struct VantagramSettingsState: Equatable {
     var deletedAlpha: Double
     var hideAds: Bool
     var animationFactor: Double
+    var fontDesign: String
     var notchBadge: Bool
     var hidePremium: Bool
     var glassEnabled: Bool
@@ -152,6 +172,7 @@ private struct VantagramSettingsState: Equatable {
             deletedAlpha: VantagramGhost.deletedAlpha,
             hideAds: VantagramGhost.hideAds,
             animationFactor: VantagramAnimation.factor,
+            fontDesign: VantagramUI.storedFontDesign,
             notchBadge: VantagramGhost.notchBadge,
             hidePremium: VantagramGhost.hidePremium,
             glassEnabled: VantagramUI.glassEnabled,
@@ -190,6 +211,7 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
 
     case interfaceHeader
     case animationSpeed(Double)
+    case fontDesign(String)
     case notchBadge(Bool)
     case glass(Bool)
     case showSeconds(Bool)
@@ -217,7 +239,7 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return VantagramSettingsSection.ghost.rawValue
         case .archiveHeader, .keepDeleted, .deletedIcon, .deletedAlpha, .archiveFooter:
             return VantagramSettingsSection.archive.rawValue
-        case .interfaceHeader, .animationSpeed, .notchBadge, .glass, .showSeconds, .interfaceFooter:
+        case .interfaceHeader, .animationSpeed, .fontDesign, .notchBadge, .glass, .showSeconds, .interfaceFooter:
             return VantagramSettingsSection.interface.rawValue
         case .accessHeader, .allowCopy, .allowSensitive, .accessFooter:
             return VantagramSettingsSection.access.rawValue
@@ -260,34 +282,36 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return 13
         case .showSeconds:
             return 14
-        case .interfaceFooter:
+        case .fontDesign:
             return 15
-        case .accessHeader:
+        case .interfaceFooter:
             return 16
-        case .allowCopy:
+        case .accessHeader:
             return 17
-        case .allowSensitive:
+        case .allowCopy:
             return 18
-        case .accessFooter:
+        case .allowSensitive:
             return 19
-        case .miscHeader:
+        case .accessFooter:
             return 20
-        case .hideAds:
+        case .miscHeader:
             return 21
-        case .hidePremium:
+        case .hideAds:
             return 22
-        case .chatsHeader:
+        case .hidePremium:
             return 23
-        case .hideStories:
+        case .chatsHeader:
             return 24
-        case .disableSwipeReply:
+        case .hideStories:
             return 25
-        case .hidePhone:
+        case .disableSwipeReply:
             return 26
-        case .openLinksExternally:
+        case .hidePhone:
             return 27
-        case .chatsFooter:
+        case .openLinksExternally:
             return 28
+        case .chatsFooter:
+            return 29
         }
     }
 
@@ -338,6 +362,10 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Скорость анимаций", label: vantagramAnimationSpeedTitle(factor), sectionId: self.section, style: .blocks, action: {
                 arguments.openAnimationSpeed()
             })
+        case let .fontDesign(design):
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Шрифт интерфейса", label: vantagramFontTitle(design), sectionId: self.section, style: .blocks, action: {
+                arguments.openFontDesign()
+            })
         case let .notchBadge(value):
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Логотип под вырезом", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateNotchBadge(value)
@@ -351,7 +379,7 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
                 arguments.updateShowSeconds(value)
             })
         case .interfaceFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Логотип под вырезом обычно не виден, но попадает на скриншоты и запись экрана. Если выключить «Liquid Glass», панели и кнопки станут обычными, как до iOS 26. При переключении приложение закроется, а через секунду придёт уведомление: нажми на него, чтобы открыть Vantagram с новым видом (iOS не даёт приложению перезапуститься самому)."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Шрифт меняется после перезапуска: приложение закроется, нажми на уведомление, чтобы открыть его снова. Логотип под вырезом обычно не виден, но попадает на скриншоты и запись экрана. Если выключить «Liquid Glass», панели и кнопки станут обычными, как до iOS 26. При переключении приложение закроется, а через секунду придёт уведомление: нажми на него, чтобы открыть Vantagram с новым видом (iOS не даёт приложению перезапуститься самому)."), sectionId: self.section)
         case .accessHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "ДОСТУП К КОНТЕНТУ", sectionId: self.section)
         case let .allowCopy(value):
@@ -412,6 +440,7 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.archiveFooter)
     entries.append(.interfaceHeader)
     entries.append(.animationSpeed(state.animationFactor))
+    entries.append(.fontDesign(state.fontDesign))
     entries.append(.notchBadge(state.notchBadge))
     entries.append(.glass(state.glassEnabled))
     entries.append(.showSeconds(state.showSeconds))
@@ -530,6 +559,28 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
                         VantagramAnimation.setFactor(value)
                     }
                     statePromise.set(VantagramSettingsState.load())
+                }
+            ))
+        },
+        openFontDesign: {
+            var options: [VantagramPickerOption] = []
+            for item in vantagramFontChoices {
+                options.append(VantagramPickerOption(id: item.0, title: item.1, symbol: nil))
+            }
+            pushControllerImpl?(vantagramPickerController(
+                context: context,
+                title: "Шрифт интерфейса",
+                header: "ШРИФТ",
+                footer: "Применяется ко всему тексту приложения. После выбора приложение закроется, а через секунду придёт уведомление: нажми на него, чтобы открыть Vantagram с новым шрифтом.",
+                options: options,
+                selectedId: VantagramUI.storedFontDesign,
+                onSelect: { id in
+                    if id == VantagramUI.storedFontDesign {
+                        return
+                    }
+                    VantagramUI.setFontDesign(id)
+                    statePromise.set(VantagramSettingsState.load())
+                    vantagramRestartApp()
                 }
             ))
         },
