@@ -252,6 +252,9 @@ public extension Peer {
     }
     
     var isCopyProtectionEnabled: Bool {
+        if VantagramGhost.allowCopy {
+            return false
+        }
         switch self {
         case let group as TelegramGroup:
             return group.flags.contains(.copyProtectionEnabled)
@@ -263,6 +266,9 @@ public extension Peer {
     }
     
     func hasSensitiveContent(platform: String) -> Bool {
+        if VantagramGhost.allowSensitive {
+            return false
+        }
         var restrictionInfo: PeerAccessRestrictionInfo?
         switch self {
         case let user as TelegramUser:

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import TelegramCore
 import TelegramPresentationData
 import TelegramUIPreferences
@@ -84,7 +85,7 @@ public func stringForMessageTimestampStatus(
         ignoreAuthor: ignoreAuthor
     )
     if message.attributes.contains(where: { $0 is VantagramDeletedMessageAttribute }) {
-        return VantagramGhost.deletedIcon + " " + baseString
+        return vantagramDeletedMarker + baseString
     }
     return baseString
 }
@@ -280,4 +281,17 @@ private func vantagramBaseStringForMessageTimestampStatus(
     }
     
     return dateText
+}
+
+/// Private marker put in front of the status string of remotely deleted messages; the date-and-status node
+/// strips it and draws a filled vector icon instead.
+public let vantagramDeletedMarker = "\u{E000}"
+
+/// Filled vector icon (SF Symbol) used for remotely deleted messages.
+public func vantagramDeletedStatusIcon(color: UIColor, pointSize: CGFloat) -> UIImage? {
+    let configuration = UIImage.SymbolConfiguration(pointSize: pointSize, weight: .semibold)
+    guard let image = UIImage(systemName: VantagramGhost.deletedIcon, withConfiguration: configuration) else {
+        return nil
+    }
+    return image.withTintColor(color, renderingMode: .alwaysOriginal)
 }

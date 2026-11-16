@@ -501,7 +501,7 @@ public class GlassBackgroundView: UIView {
     public static var useCustomGlassImpl: Bool = false
     
     public override init(frame: CGRect) {
-        if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl {
+        if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl, VantagramUI.glassEnabled {
             self.legacyView = nil
             self.legacyHighlightContainerView = nil
             self.legacyHighlightClippingContext = nil
@@ -861,7 +861,7 @@ public final class GlassBackgroundContainerView: UIView {
     }
     
     public init(spacing: CGFloat = 7.0) {
-        if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl {
+        if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl, VantagramUI.glassEnabled {
             let effect = UIGlassContainerEffect()
             effect.spacing = spacing
             let nativeView = UIVisualEffectView(effect: effect)

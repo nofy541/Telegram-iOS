@@ -44,17 +44,17 @@ public enum VantagramGhost {
     private static let deletedAlphaKey = "vantagram.archive.deletedAlpha"
 
     /// Icons the user can pick for messages that were deleted remotely (shown next to the message time).
-    public static let deletedIconChoices: [String] = ["🗑", "🪣", "❌", "💀", "👻", "🔥"]
+    public static let deletedIconChoices: [String] = ["trash.fill", "xmark.bin.fill", "xmark.circle.fill", "eye.slash.fill", "minus.circle.fill", "exclamationmark.circle.fill", "flame.fill", "bolt.fill"]
 
     /// Opacity choices for messages that were deleted remotely.
     public static let deletedAlphaChoices: [Double] = [1.0, 0.8, 0.6, 0.4, 0.25]
 
     /// Icon shown next to the time of a message that was deleted remotely.
     public static var deletedIcon: String {
-        if let value = UserDefaults.standard.string(forKey: deletedIconKey), !value.isEmpty {
+        if let value = UserDefaults.standard.string(forKey: deletedIconKey), deletedIconChoices.contains(value) {
             return value
         }
-        return "🗑"
+        return "trash.fill"
     }
 
     public static func setDeletedIcon(_ value: String) {
@@ -82,6 +82,27 @@ public enum VantagramGhost {
 
     public static func setShowSeconds(_ value: Bool) {
         UserDefaults.standard.set(value, forKey: showSecondsKey)
+    }
+
+    private static let allowCopyKey = "vantagram.misc.allowCopy"
+    private static let allowSensitiveKey = "vantagram.misc.allowSensitive"
+
+    /// Allow copying, saving and forwarding from chats with "restrict saving content".
+    public static var allowCopy: Bool {
+        return UserDefaults.standard.bool(forKey: allowCopyKey)
+    }
+
+    public static func setAllowCopy(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: allowCopyKey)
+    }
+
+    /// Do not hide sensitive (18+) content behind a blur.
+    public static var allowSensitive: Bool {
+        return UserDefaults.standard.bool(forKey: allowSensitiveKey)
+    }
+
+    public static func setAllowSensitive(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: allowSensitiveKey)
     }
 
     private static let hidePremiumKey = "vantagram.misc.hidePremium"

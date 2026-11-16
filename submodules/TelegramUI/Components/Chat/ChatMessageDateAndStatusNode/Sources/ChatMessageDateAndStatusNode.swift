@@ -604,6 +604,12 @@ public class ChatMessageDateAndStatusNode: ASDisplayNode {
             }
             
             var updatedDateText = arguments.dateText
+            if updatedDateText.hasPrefix(vantagramDeletedMarker) {
+                updatedDateText = String(updatedDateText.dropFirst(vantagramDeletedMarker.count))
+                if impressionImage == nil {
+                    impressionImage = vantagramDeletedStatusIcon(color: dateColor, pointSize: floor(arguments.presentationData.fontSize.baseDisplaySize * 11.0 / 17.0))
+                }
+            }
             if arguments.edited {
                 if let useEditedTimestamp = arguments.context.getAppConfigValue("message_primary_edited_date") as? Bool, useEditedTimestamp {
                 } else {

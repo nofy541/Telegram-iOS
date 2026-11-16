@@ -536,6 +536,9 @@ public extension Message {
     }
     
     func isCopyProtected() -> Bool {
+        if VantagramGhost.allowCopy {
+            return false
+        }
         if self.flags.contains(.CopyProtected) {
             return true
         } else if let group = self.peers[self.id.peerId] as? TelegramGroup, group.flags.contains(.copyProtectionEnabled) {
@@ -548,6 +551,9 @@ public extension Message {
     }
     
     func isSensitiveContent(platform: String) -> Bool {
+        if VantagramGhost.allowSensitive {
+            return false
+        }
         if let rule = self.restrictedContentAttribute?.rules.first(where: { $0.reason == "sensitive" }) {
             if rule.platform == "all" || rule.platform == platform {
                 return true
