@@ -3962,6 +3962,8 @@ public class ChatMessageBubbleItemNode: ChatMessageItemView, ChatMessagePreviewI
         strongSelf.contentContainersWrapperNode.frame = CGRect(origin: CGPoint(), size: layout.contentSize)
         
         strongSelf.appliedItem = item
+        // Vantagram: fade messages that were deleted remotely but kept locally.
+        strongSelf.mainContextSourceNode.contentNode.alpha = item.content.firstMessage.isVantagramDeleted ? CGFloat(VantagramGhost.deletedAlpha) : 1.0
         strongSelf.appliedForwardInfo = ChatMessageAppliedForwardInfo(messageId: item.content.firstMessage.id, source: forwardSource, authorSignature: forwardAuthorSignature)
         strongSelf.updateAccessibilityData(accessibilityData)
         strongSelf.disablesComments = disablesComments

@@ -46,7 +46,7 @@ public class ContactListActionItem: ListViewItem, ListViewItemWithHeader {
     public init(presentationData: ItemListPresentationData, style: ItemListStyle = .plain, systemStyle: ItemListSystemStyle = .legacy, title: String, subtitle: String? = nil, icon: ContactListActionItemIcon, actionStyle: Style = .accent, height: Height = .generic, highlight: ContactListActionItemHighlight = .cell, clearHighlightAutomatically: Bool = true, accessible: Bool = true, header: ListViewItemHeader?, action: @escaping () -> Void) {
         self.presentationData = presentationData
         self.style = style
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.title = title
         self.subtitle = subtitle
         self.icon = icon

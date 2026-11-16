@@ -40,6 +40,50 @@ public enum VantagramGhost {
         UserDefaults.standard.set(value, forKey: hideAdsKey)
     }
 
+    private static let deletedIconKey = "vantagram.archive.deletedIcon"
+    private static let deletedAlphaKey = "vantagram.archive.deletedAlpha"
+
+    /// Icons the user can pick for messages that were deleted remotely (shown next to the message time).
+    public static let deletedIconChoices: [String] = ["🗑", "🪣", "❌", "💀", "👻", "🔥"]
+
+    /// Opacity choices for messages that were deleted remotely.
+    public static let deletedAlphaChoices: [Double] = [1.0, 0.8, 0.6, 0.4, 0.25]
+
+    /// Icon shown next to the time of a message that was deleted remotely.
+    public static var deletedIcon: String {
+        if let value = UserDefaults.standard.string(forKey: deletedIconKey), !value.isEmpty {
+            return value
+        }
+        return "🗑"
+    }
+
+    public static func setDeletedIcon(_ value: String) {
+        UserDefaults.standard.set(value, forKey: deletedIconKey)
+    }
+
+    /// Opacity of a message that was deleted remotely (1.0 = fully opaque).
+    public static var deletedAlpha: Double {
+        if let value = UserDefaults.standard.object(forKey: deletedAlphaKey) as? Double, value >= 0.05, value <= 1.0 {
+            return value
+        }
+        return 0.6
+    }
+
+    public static func setDeletedAlpha(_ value: Double) {
+        UserDefaults.standard.set(value, forKey: deletedAlphaKey)
+    }
+
+    private static let showSecondsKey = "vantagram.time.showSeconds"
+
+    /// Show seconds in the time of messages in chat bubbles.
+    public static var showSeconds: Bool {
+        return UserDefaults.standard.bool(forKey: showSecondsKey)
+    }
+
+    public static func setShowSeconds(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: showSecondsKey)
+    }
+
     private static let hidePremiumKey = "vantagram.misc.hidePremium"
 
     /// Hide Telegram Premium purchase promotions across the app.

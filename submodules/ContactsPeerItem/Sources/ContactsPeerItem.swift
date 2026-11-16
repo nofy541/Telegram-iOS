@@ -288,7 +288,7 @@ public class ContactsPeerItem: ItemListItem, ListViewItemWithHeader {
     ) {
         self.presentationData = presentationData
         self.style = style
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.sectionId = sectionId
         self.sortOrder = sortOrder
         self.displayOrder = displayOrder

@@ -82,7 +82,7 @@ public class ItemListInviteLinkItem: ListViewItem, ItemListItem {
     ) {
         self.context = context
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.invite = invite
         self.share = share
         self.sectionId = sectionId

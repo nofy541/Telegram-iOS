@@ -127,7 +127,7 @@ public final class ListMessageItem: ListViewItem, ItemListItem {
         sectionId: ItemListSectionId = 0
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.context = context
         self.chatLocation = chatLocation
         self.interaction = interaction

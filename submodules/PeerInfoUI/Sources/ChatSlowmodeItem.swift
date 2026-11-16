@@ -21,7 +21,7 @@ class ChatSlowmodeItem: ListViewItem, ItemListItem {
     init(theme: PresentationTheme, strings: PresentationStrings, systemStyle: ItemListSystemStyle, value: Int32, enabled: Bool, sectionId: ItemListSectionId, updated: @escaping (Int32) -> Void) {
         self.theme = theme
         self.strings = strings
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.value = value
         self.sectionId = sectionId
         self.updated = updated

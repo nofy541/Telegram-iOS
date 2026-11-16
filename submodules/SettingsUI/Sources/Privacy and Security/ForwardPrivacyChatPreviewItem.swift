@@ -30,7 +30,7 @@ class ForwardPrivacyChatPreviewItem: ListViewItem, ItemListItem {
         self.context = context
         self.theme = theme
         self.strings = strings
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.sectionId = sectionId
         self.fontSize = fontSize
         self.chatBubbleCorners = chatBubbleCorners

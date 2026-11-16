@@ -61,7 +61,35 @@ private func monthAtIndex(_ index: Int, strings: PresentationStrings) -> String 
     }
 }
 
+/// Vantagram: adds the user-chosen "deleted" icon in front of the time of messages that were
+/// deleted remotely but kept locally.
 public func stringForMessageTimestampStatus(
+    context: AccountContext,
+    message: EngineMessage,
+    dateTimeFormat: PresentationDateTimeFormat,
+    nameDisplayOrder: PresentationPersonNameOrder,
+    strings: PresentationStrings,
+    format: MessageTimestampStatusFormat = .regular,
+    associatedData: ChatMessageItemAssociatedData,
+    ignoreAuthor: Bool = false
+) -> String {
+    let baseString = vantagramBaseStringForMessageTimestampStatus(
+        context: context,
+        message: message,
+        dateTimeFormat: dateTimeFormat,
+        nameDisplayOrder: nameDisplayOrder,
+        strings: strings,
+        format: format,
+        associatedData: associatedData,
+        ignoreAuthor: ignoreAuthor
+    )
+    if message.attributes.contains(where: { $0 is VantagramDeletedMessageAttribute }) {
+        return VantagramGhost.deletedIcon + " " + baseString
+    }
+    return baseString
+}
+
+private func vantagramBaseStringForMessageTimestampStatus(
     context: AccountContext,
     message: EngineMessage,
     dateTimeFormat: PresentationDateTimeFormat,
@@ -107,7 +135,7 @@ public func stringForMessageTimestampStatus(
         timestamp = orignalDate
     }
     
-    var dateText = stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat)
+    var dateText = stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat, withSeconds: VantagramGhost.showSeconds)
     if timestamp == scheduleWhenOnlineTimestamp {
         dateText = "         "
     }
@@ -171,12 +199,12 @@ public func stringForMessageTimestampStatus(
         }
         if isFullEditedDate {
             if dayText.isEmpty {
-                dateText = strings.Message_EditTodayFullDateFormat(stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat)).string
+                dateText = strings.Message_EditTodayFullDateFormat(stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat, withSeconds: VantagramGhost.showSeconds)).string
             } else {
-                dateText = strings.Message_EditFullDateFormat(dayText, stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat)).string
+                dateText = strings.Message_EditFullDateFormat(dayText, stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat, withSeconds: VantagramGhost.showSeconds)).string
             }
         } else {
-            dateText = strings.Message_FullDateFormat(dayText, stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat)).string
+            dateText = strings.Message_FullDateFormat(dayText, stringForMessageTimestamp(timestamp: timestamp, dateTimeFormat: dateTimeFormat, withSeconds: VantagramGhost.showSeconds)).string
         }
     } else if let forwardInfo = message.forwardInfo, forwardInfo.flags.contains(.isImported) {
         dateText = strings.Message_ImportedDateFormat(dateStringForDay(strings: strings, dateTimeFormat: dateTimeFormat, timestamp: forwardInfo.date), stringForMessageTimestamp(timestamp: forwardInfo.date, dateTimeFormat: dateTimeFormat), dateText).string

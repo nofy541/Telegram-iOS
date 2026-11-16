@@ -45,7 +45,7 @@ public class ItemListDatePickerItem: ListViewItem, ItemListItem {
         tag: ItemListItemTag? = nil
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.dateTimeFormat = dateTimeFormat
         self.date = date
         self.minDate = minDate

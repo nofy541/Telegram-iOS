@@ -26,6 +26,20 @@ public enum VantagramAnimation {
     }
 }
 
+/// Vantagram: interface style switches that low-level UI code needs to read.
+public enum VantagramUI {
+    private static let glassKey = "vantagram.ui.glassDisabled"
+
+    /// "Liquid glass" look of list screens. When disabled, items fall back to the classic (iOS 18 style) look.
+    public static var glassEnabled: Bool {
+        return !UserDefaults.standard.bool(forKey: glassKey)
+    }
+
+    public static func setGlassEnabled(_ value: Bool) {
+        UserDefaults.standard.set(!value, forKey: glassKey)
+    }
+}
+
 public func makeSpringAnimation(_ keyPath: String, duration: Double) -> CABasicAnimation {
     return makeSpringAnimationImpl(keyPath, duration)
 }

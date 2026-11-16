@@ -45,7 +45,7 @@ final class WebBrowserDomainExceptionItem: ListViewItem, ItemListItem {
         deleted: (() -> Void)?
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.context = context
         self.title = title
         self.label = label

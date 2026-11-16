@@ -63,7 +63,7 @@ final class AutodownloadSizeLimitItem: ListViewItem, ItemListItem {
     init(theme: PresentationTheme, strings: PresentationStrings, systemStyle: ItemListSystemStyle = .legacy, decimalSeparator: String, text: String, value: Int64, range: Range<Int64>?, sectionId: ItemListSectionId, updated: @escaping (Int64) -> Void, tag: ItemListItemTag? = nil) {
         self.theme = theme
         self.strings = strings
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.decimalSeparator = decimalSeparator
         self.text = text
         self.value = value

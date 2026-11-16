@@ -64,7 +64,7 @@ public final class ItemListStickerPackItem: ListViewItem, ItemListItem, ItemList
     public init(presentationData: ItemListPresentationData, context: AccountContext, systemStyle: ItemListSystemStyle = .legacy, packInfo: StickerPackCollectionInfo.Accessor, itemCount: String, topItem: StickerPackItem?, unread: Bool, control: ItemListStickerPackItemControl, editing: ItemListStickerPackItemEditing, enabled: Bool, playAnimatedStickers: Bool, style: ItemListStyle = .blocks, sectionId: ItemListSectionId, action: (() -> Void)?, setPackIdWithRevealedOptions: @escaping (EngineItemCollectionId?, EngineItemCollectionId?) -> Void, addPack: @escaping () -> Void, removePack: @escaping () -> Void, toggleSelected: @escaping () -> Void) {
         self.presentationData = presentationData
         self.context = context
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.packInfo = packInfo
         self.itemCount = itemCount
         self.topItem = topItem

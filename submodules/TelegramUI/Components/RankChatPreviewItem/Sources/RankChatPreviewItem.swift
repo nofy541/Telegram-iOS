@@ -86,7 +86,7 @@ public final class RankChatPreviewItem: ListViewItem, ItemListItem, ListItemComp
         maskSide: Bool = false
     ) {
         self.context = context
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.theme = theme
         self.componentTheme = componentTheme
         self.strings = strings

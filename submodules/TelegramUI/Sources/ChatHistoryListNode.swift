@@ -879,7 +879,7 @@ public final class ChatHistoryListNodeImpl: ASDisplayNode, ChatHistoryNode, Chat
         }
         
         self.context = context
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.chatLocation = chatLocation
         self.chatLocationContextHolder = chatLocationContextHolder
         self.source = source

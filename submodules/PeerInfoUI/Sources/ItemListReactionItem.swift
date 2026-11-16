@@ -40,7 +40,7 @@ public class ItemListReactionItem: ListViewItem, ItemListItem {
     ) {
         self.context = context
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.availableReactions = availableReactions
         self.reaction = reaction
         self.title = title

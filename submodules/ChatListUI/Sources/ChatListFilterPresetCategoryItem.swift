@@ -47,7 +47,7 @@ final class ChatListFilterPresetCategoryItem: ListViewItem, ItemListItem, ItemLi
         remove: @escaping () -> Void
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.title = title
         self.icon = icon
         self.isRevealed = isRevealed

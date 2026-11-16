@@ -55,7 +55,7 @@ final class StatsOverviewItem: ListViewItem, ItemListItem {
     init(context: AccountContext, presentationData: ItemListPresentationData, systemStyle: ItemListSystemStyle = .glass, isGroup: Bool, stats: Stats?, additionalStats: Stats? = nil, storyViews: EngineStoryItem.Views? = nil, publicShares: Int32? = nil, sectionId: ItemListSectionId, style: ItemListStyle) {
         self.context = context
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.isGroup = isGroup
         self.stats = stats
         self.additionalStats = additionalStats

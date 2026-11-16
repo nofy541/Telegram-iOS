@@ -58,7 +58,7 @@ final class ChatListFilterPresetListItem: ListViewItem, ItemListItem, ItemListRe
     ) {
         self.context = context
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.preset = preset
         self.title = title
         self.label = label

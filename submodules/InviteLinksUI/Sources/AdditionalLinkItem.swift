@@ -27,7 +27,7 @@ public class AdditionalLinkItem: ListViewItem, ItemListItem {
         tag: ItemListItemTag? = nil
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.username = username
         self.sectionId = sectionId
         self.style = style

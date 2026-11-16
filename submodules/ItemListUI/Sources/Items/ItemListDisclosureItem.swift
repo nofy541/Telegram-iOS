@@ -102,7 +102,7 @@ public class ItemListDisclosureItem: ListViewItem, ItemListItem, ListItemCompone
         shimmeringIndex: Int? = nil
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.icon = icon
         self.context = context
         self.iconPeer = iconPeer

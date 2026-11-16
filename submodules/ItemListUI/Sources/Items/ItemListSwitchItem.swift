@@ -43,7 +43,7 @@ public class ItemListSwitchItem: ListViewItem, ItemListItem {
     
     public init(presentationData: ItemListPresentationData, systemStyle: ItemListSystemStyle = .legacy, icon: UIImage? = nil, title: String, text: String? = nil, textColor: TextColor = .primary, titleBadgeComponent: AnyComponent<Empty>? = nil, value: Bool, type: ItemListSwitchItemNodeType = .regular, enableInteractiveChanges: Bool = true, enabled: Bool = true, displayLocked: Bool = false, disableLeadingInset: Bool = false, maximumNumberOfLines: Int = 1, noCorners: Bool = false, sectionId: ItemListSectionId, style: ItemListStyle, updated: @escaping (Bool) -> Void, activatedWhileDisabled: @escaping () -> Void = {}, action: (() -> Void)? = nil, tag: ItemListItemTag? = nil) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.icon = icon
         self.title = title
         self.text = text

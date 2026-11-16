@@ -27,7 +27,7 @@ public class ChatListFilterPresetListSuggestedItem: ListViewItem, ItemListItem {
         tag: ItemListItemTag? = nil
     ) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.title = title
         self.label = label
         self.sectionId = sectionId

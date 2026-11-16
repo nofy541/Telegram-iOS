@@ -18,7 +18,7 @@ class LocationSectionHeaderItem: ListViewItem {
     
     public init(presentationData: ItemListPresentationData, systemStyle: ItemListSystemStyle = .legacy, title: String) {
         self.presentationData = presentationData
-        self.systemStyle = systemStyle
+        self.systemStyle = VantagramUI.glassEnabled ? systemStyle : .legacy
         self.title = title
     }
     
