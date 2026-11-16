@@ -42,7 +42,9 @@ private final class AccountPresenceManagerImpl {
         self.onlineTimer?.invalidate()
     }
     
-    private func updatePresence(_ isOnline: Bool) {
+    private func updatePresence(_ requestedOnline: Bool) {
+        // Vantagram ghost mode: always report offline.
+        let isOnline = requestedOnline && !VantagramGhost.hideOnline
         let request: Signal<Api.Bool, MTRpcError>
         if isOnline {
             let timer = SignalKitTimer(timeout: 30.0, repeat: false, completion: { [weak self] in

@@ -247,6 +247,10 @@ private func validatePeerReadState(network: Network, postbox: Postbox, stateMana
 }
 
 private func pushPeerReadState(network: Network, postbox: Postbox, stateManager: AccountStateManager, peerId: PeerId, readState: PeerReadState) -> Signal<PeerReadState, PeerReadStateValidationError> {
+    // Vantagram ghost mode: keep the chat read locally, but never tell the server.
+    if VantagramGhost.hideRead {
+        return .single(readState)
+    }
     if peerId.namespace == Namespaces.Peer.SecretChat {
         // Decide whether a request is needed before looking the peer up: inputSecretChat goes
         // through loadedPeerWithId, which never emits when the peer row is missing and fails
