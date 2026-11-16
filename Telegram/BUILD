@@ -321,7 +321,29 @@ filegroup(
     ]),
 )
 
+# Vantagram: primary app icon (single 1024x1024 universal icon).
+filegroup(
+    name = "VantagramAppIcon",
+    srcs = glob([
+        "Telegram-iOS/VantagramIcons.xcassets/**/*",
+    ], exclude = ["Telegram-iOS/VantagramIcons.xcassets/**/.*"]),
+)
+
 alternate_icon_folders = [
+    "VDark",
+    "VOcean",
+    "VPorcelain",
+    "VEmerald",
+    "VOrchid",
+    "VAmber",
+    "VCherry",
+    "VAurora",
+    "VSunrise",
+    "VPeriwinkle",
+    "VLime",
+    "VRetrowave",
+    "VSpring",
+    "VWinter",
     "BlackIcon",
     "BlackClassicIcon",
     "BlackFilledIcon",
@@ -636,7 +658,7 @@ plist_fragment(
     template =
     """
     <key>CFBundleDisplayName</key>
-    <string>Telegram</string>
+    <string>Vantagram</string>
     """
 )
 
@@ -1621,11 +1643,11 @@ plist_fragment(
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Telegram</string>
+    <string>Vantagram</string>
     <key>CFBundleIdentifier</key>
     <string>{telegram_bundle_id}</string>
     <key>CFBundleName</key>
-    <string>Telegram</string>
+    <string>Vantagram</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSignature</key>
@@ -1847,7 +1869,7 @@ ios_application(
         ":RequiredDeviceCapabilitiesPlist",
         ":UrlTypesInfoPlist",
     ],
-    app_icons = [ ":{}_icon".format(name) for name in composer_icon_folders ],
+    app_icons = [":VantagramAppIcon"],
     alternate_icons = [
         ":{}".format(name) for name in alternate_icon_folders
     ],

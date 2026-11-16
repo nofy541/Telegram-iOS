@@ -8,25 +8,63 @@ import ItemListUI
 import PresentationDataUtils
 import AccountContext
 
+private let vantagramAnimationSpeeds: [Double] = [0.35, 0.6, 1.0, 1.6, 2.5]
+
+private func vantagramAnimationSpeedTitle(_ factor: Double) -> String {
+    if factor <= 0.4 {
+        return "Очень быстро"
+    } else if factor <= 0.7 {
+        return "Быстро"
+    } else if factor < 1.3 {
+        return "Обычно"
+    } else if factor < 2.0 {
+        return "Медленно"
+    } else {
+        return "Очень медленно"
+    }
+}
+
+private func vantagramNextAnimationSpeed(_ factor: Double) -> Double {
+    var closestIndex = 0
+    var closestDistance = Double.greatestFiniteMagnitude
+    for i in 0 ..< vantagramAnimationSpeeds.count {
+        let distance = abs(vantagramAnimationSpeeds[i] - factor)
+        if distance < closestDistance {
+            closestDistance = distance
+            closestIndex = i
+        }
+    }
+    return vantagramAnimationSpeeds[(closestIndex + 1) % vantagramAnimationSpeeds.count]
+}
+
 private final class VantagramSettingsArguments {
     let updateHideRead: (Bool) -> Void
     let updateHideTyping: (Bool) -> Void
     let updateHideOnline: (Bool) -> Void
     let updateKeepDeleted: (Bool) -> Void
     let updateHideAds: (Bool) -> Void
+    let cycleAnimationSpeed: () -> Void
+    let updateNotchBadge: (Bool) -> Void
+    let updateHidePremium: (Bool) -> Void
 
     init(
         updateHideRead: @escaping (Bool) -> Void,
         updateHideTyping: @escaping (Bool) -> Void,
         updateHideOnline: @escaping (Bool) -> Void,
         updateKeepDeleted: @escaping (Bool) -> Void,
-        updateHideAds: @escaping (Bool) -> Void
+        updateHideAds: @escaping (Bool) -> Void,
+        cycleAnimationSpeed: @escaping () -> Void,
+        updateNotchBadge: @escaping (Bool) -> Void,
+        updateHidePremium: @escaping (Bool) -> Void
     ) {
         self.updateHideRead = updateHideRead
         self.updateHideTyping = updateHideTyping
         self.updateHideOnline = updateHideOnline
         self.updateKeepDeleted = updateKeepDeleted
         self.updateHideAds = updateHideAds
+        self.cycleAnimationSpeed = cycleAnimationSpeed
+        self.updateNotchBadge = updateNotchBadge
+        self.updateHidePremium = updateHidePremium
     }
 }
 
@@ -36,6 +74,9 @@ private struct VantagramSettingsState: Equatable {
     var hideOnline: Bool
     var keepDeleted: Bool
     var hideAds: Bool
+    var animationFactor: Double
+    var notchBadge: Bool
+    var hidePremium: Bool
 
     static func load() -> VantagramSettingsState {
         return VantagramSettingsState(
@@ -43,7 +84,10 @@ private struct VantagramSettingsState: Equatable {
             hideTyping: VantagramGhost.hideTyping,
             hideOnline: VantagramGhost.hideOnline,
             keepDeleted: VantagramGhost.keepDeleted,
-            hideAds: VantagramGhost.hideAds
+            hideAds: VantagramGhost.hideAds,
+            animationFactor: VantagramAnimation.factor,
+            notchBadge: VantagramGhost.notchBadge,
+            hidePremium: VantagramGhost.hidePremium
         )
     }
 }
@@ -51,6 +95,7 @@ private struct VantagramSettingsState: Equatable {
 private enum VantagramSettingsSection: Int32 {
     case ghost
     case archive
+    case interface
     case misc
 }
 
@@ -65,8 +110,14 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
     case keepDeleted(Bool)
     case archiveFooter
 
+    case interfaceHeader
+    case animationSpeed(Double)
+    case notchBadge(Bool)
+    case interfaceFooter
+
     case miscHeader
     case hideAds(Bool)
+    case hidePremium(Bool)
 
     var section: ItemListSectionId {
         switch self {
@@ -74,7 +125,9 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return VantagramSettingsSection.ghost.rawValue
         case .archiveHeader, .keepDeleted, .archiveFooter:
             return VantagramSettingsSection.archive.rawValue
-        case .miscHeader, .hideAds:
+        case .interfaceHeader, .animationSpeed, .notchBadge, .interfaceFooter:
+            return VantagramSettingsSection.interface.rawValue
+        case .miscHeader, .hideAds, .hidePremium:
             return VantagramSettingsSection.misc.rawValue
         }
     }
@@ -97,10 +150,20 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return 6
         case .archiveFooter:
             return 7
-        case .miscHeader:
+        case .interfaceHeader:
             return 8
-        case .hideAds:
+        case .animationSpeed:
             return 9
+        case .notchBadge:
+            return 10
+        case .interfaceFooter:
+            return 11
+        case .miscHeader:
+            return 12
+        case .hideAds:
+            return 13
+        case .hidePremium:
+            return 14
         }
     }
 
@@ -134,12 +197,28 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
                 arguments.updateKeepDeleted(value)
             })
         case .archiveFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Если собеседник удалит сообщение, оно останется у тебя в чате. Работает для удалений, пришедших, пока приложение запущено."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Если собеседник удалит сообщение, оно останется у тебя в чате с пометкой «удалено». Работает для удалений, пришедших, пока приложение запущено."), sectionId: self.section)
+        case .interfaceHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ИНТЕРФЕЙС", sectionId: self.section)
+        case let .animationSpeed(factor):
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Скорость анимаций", label: vantagramAnimationSpeedTitle(factor), sectionId: self.section, style: .blocks, action: {
+                arguments.cycleAnimationSpeed()
+            })
+        case let .notchBadge(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Логотип под вырезом", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateNotchBadge(value)
+            })
+        case .interfaceFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Нажми на «Скорость анимаций», чтобы переключить. Логотип под вырезом обычно не виден, но попадает на скриншоты и запись экрана."), sectionId: self.section)
         case .miscHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "ПРОЧЕЕ", sectionId: self.section)
         case let .hideAds(value):
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрывать рекламу в каналах", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateHideAds(value)
+            })
+        case let .hidePremium(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрывать предложения Premium", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHidePremium(value)
             })
         }
     }
@@ -155,8 +234,13 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.archiveHeader)
     entries.append(.keepDeleted(state.keepDeleted))
     entries.append(.archiveFooter)
+    entries.append(.interfaceHeader)
+    entries.append(.animationSpeed(state.animationFactor))
+    entries.append(.notchBadge(state.notchBadge))
+    entries.append(.interfaceFooter)
     entries.append(.miscHeader)
     entries.append(.hideAds(state.hideAds))
+    entries.append(.hidePremium(state.hidePremium))
     return entries
 }
 
@@ -182,6 +266,18 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
         },
         updateHideAds: { value in
             VantagramGhost.setHideAds(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        cycleAnimationSpeed: {
+            VantagramAnimation.setFactor(vantagramNextAnimationSpeed(VantagramAnimation.factor))
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateNotchBadge: { value in
+            VantagramGhost.setNotchBadge(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateHidePremium: { value in
+            VantagramGhost.setHidePremium(value)
             statePromise.set(VantagramSettingsState.load())
         }
     )

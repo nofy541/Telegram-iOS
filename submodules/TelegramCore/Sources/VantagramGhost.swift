@@ -40,6 +40,29 @@ public enum VantagramGhost {
         UserDefaults.standard.set(value, forKey: hideAdsKey)
     }
 
+    private static let hidePremiumKey = "vantagram.misc.hidePremium"
+
+    /// Hide Telegram Premium purchase promotions across the app.
+    public static var hidePremium: Bool {
+        return UserDefaults.standard.bool(forKey: hidePremiumKey)
+    }
+
+    public static func setHidePremium(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: hidePremiumKey)
+    }
+
+    private static let notchBadgeKey = "vantagram.misc.notchBadge"
+
+    /// Show the Vantagram "V" logo under the Dynamic Island (visible in screenshots/recordings).
+    public static var notchBadge: Bool {
+        return UserDefaults.standard.bool(forKey: notchBadgeKey)
+    }
+
+    public static func setNotchBadge(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: notchBadgeKey)
+        NotificationCenter.default.post(name: Notification.Name("vantagram.notchBadge.changed"), object: nil)
+    }
+
     public static func setKeepDeleted(_ value: Bool) {
         UserDefaults.standard.set(value, forKey: keepDeletedKey)
     }

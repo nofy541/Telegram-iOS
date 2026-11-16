@@ -12,7 +12,7 @@ public extension UIView {
         #if targetEnvironment(simulator)
         return Double(UIAnimationDragCoefficient())
         #else
-        return 1.0
+        return VantagramAnimation.factor
         #endif
     }
 }

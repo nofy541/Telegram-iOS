@@ -279,7 +279,7 @@ public struct PremiumConfiguration {
                 return (value as? Double).flatMap(Int32.init)
             }
             return PremiumConfiguration(
-                isPremiumDisabled: data["premium_purchase_blocked"] as? Bool ?? defaultValue.isPremiumDisabled,
+                isPremiumDisabled: VantagramGhost.hidePremium || (data["premium_purchase_blocked"] as? Bool ?? defaultValue.isPremiumDisabled),
                 areStarsDisabled: data["stars_purchase_blocked"] as? Bool ?? defaultValue.areStarsDisabled,
                 subscriptionManagementUrl: data["premium_manage_subscription_url"] as? String ?? "",
                 showPremiumGiftInAttachMenu: data["premium_gift_attach_menu_icon"] as? Bool ?? defaultValue.showPremiumGiftInAttachMenu,

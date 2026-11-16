@@ -9,10 +9,15 @@ UIKIT_EXTERN float UIAnimationDragCoefficient();
 #endif
 
 double animationDurationFactorImpl() {
+    // Vantagram: user-configurable animation speed multiplier (bigger value = slower animations).
+    double vantagramFactor = [[NSUserDefaults standardUserDefaults] doubleForKey:@"vantagram.animation.durationFactor"];
+    if (vantagramFactor < 0.05) {
+        vantagramFactor = 1.0;
+    }
 #if TARGET_IPHONE_SIMULATOR
-    return (double)UIAnimationDragCoefficient();
-#endif   
-    return 1.0f;
+    return (double)UIAnimationDragCoefficient() * vantagramFactor;
+#endif
+    return vantagramFactor;
 }
 
 @interface CASpringAnimation ()

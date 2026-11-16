@@ -402,6 +402,34 @@ class ThemeSettingsAppIconItemNode: ListViewItemNode, ItemListItemNode {
                                     name = item.strings.Appearance_AppIconBlack
                                 case "PremiumTurbo":
                                     name = item.strings.Appearance_AppIconTurbo
+                                case "VDark":
+                                    name = "Тёмная"
+                                case "VOcean":
+                                    name = "Океан"
+                                case "VPorcelain":
+                                    name = "Фарфор"
+                                case "VEmerald":
+                                    name = "Изумруд"
+                                case "VOrchid":
+                                    name = "Орхидея"
+                                case "VAmber":
+                                    name = "Янтарь"
+                                case "VCherry":
+                                    name = "Вишня"
+                                case "VAurora":
+                                    name = "Аврора"
+                                case "VSunrise":
+                                    name = "Рассвет"
+                                case "VPeriwinkle":
+                                    name = "Барвинок"
+                                case "VLime":
+                                    name = "Лайм"
+                                case "VRetrowave":
+                                    name = "Ретровейв"
+                                case "VSpring":
+                                    name = "Весна"
+                                case "VWinter":
+                                    name = "Зима"
                                 default:
                                     name = icon.name
                             }

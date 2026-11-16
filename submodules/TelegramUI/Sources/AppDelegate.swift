@@ -349,7 +349,9 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         precondition(!testIsLaunched)
         testIsLaunched = true
-        
+
+        VantagramNotchBadge.install()
+
         let _ = voipTokenPromise.get().start(next: { token in
             self.voipDeviceToken.set(.single(token))
         })
@@ -990,24 +992,23 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
             self.window?.rootViewController?.dismiss(animated: true, completion: nil)
         }, getAvailableAlternateIcons: {
             if #available(iOS 10.3, *) {
-                var icons = [
-                    PresentationAppIcon(name: "BlueIcon", imageName: "BlueIcon", isDefault: buildConfig.isAppStoreBuild),
-                    PresentationAppIcon(name: "New2", imageName: "New2"),
-                    PresentationAppIcon(name: "New1", imageName: "New1"),
-                    PresentationAppIcon(name: "BlackIcon", imageName: "BlackIcon"),
-                    PresentationAppIcon(name: "BlueClassicIcon", imageName: "BlueClassicIcon"),
-                    PresentationAppIcon(name: "BlackClassicIcon", imageName: "BlackClassicIcon"),
-                    PresentationAppIcon(name: "BlueFilledIcon", imageName: "BlueFilledIcon"),
-                    PresentationAppIcon(name: "BlackFilledIcon", imageName: "BlackFilledIcon")
+                // Vantagram: our own icon set (the first one is the primary icon).
+                let icons = [
+                    PresentationAppIcon(name: "VDark", imageName: "VDark", isDefault: true),
+                    PresentationAppIcon(name: "VOcean", imageName: "VOcean"),
+                    PresentationAppIcon(name: "VPorcelain", imageName: "VPorcelain"),
+                    PresentationAppIcon(name: "VEmerald", imageName: "VEmerald"),
+                    PresentationAppIcon(name: "VOrchid", imageName: "VOrchid"),
+                    PresentationAppIcon(name: "VAmber", imageName: "VAmber"),
+                    PresentationAppIcon(name: "VCherry", imageName: "VCherry"),
+                    PresentationAppIcon(name: "VAurora", imageName: "VAurora"),
+                    PresentationAppIcon(name: "VSunrise", imageName: "VSunrise"),
+                    PresentationAppIcon(name: "VPeriwinkle", imageName: "VPeriwinkle"),
+                    PresentationAppIcon(name: "VLime", imageName: "VLime"),
+                    PresentationAppIcon(name: "VRetrowave", imageName: "VRetrowave"),
+                    PresentationAppIcon(name: "VSpring", imageName: "VSpring"),
+                    PresentationAppIcon(name: "VWinter", imageName: "VWinter")
                 ]
-                if buildConfig.isInternalBuild {
-                    icons.append(PresentationAppIcon(name: "WhiteFilledIcon", imageName: "WhiteFilledIcon"))
-                }
-                
-                icons.append(PresentationAppIcon(name: "Premium", imageName: "Premium", isPremium: true))
-                icons.append(PresentationAppIcon(name: "PremiumTurbo", imageName: "PremiumTurbo", isPremium: true))
-                icons.append(PresentationAppIcon(name: "PremiumBlack", imageName: "PremiumBlack", isPremium: true))
-                
                 return icons
             } else {
                 return []

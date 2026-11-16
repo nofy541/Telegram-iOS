@@ -8,6 +8,24 @@ public extension UIView {
     }
 }
 
+/// Vantagram: user-configurable animation speed. The value is a duration multiplier,
+/// so bigger means slower. It is read by `animationDurationFactorImpl` in UIKitRuntimeUtils.
+public enum VantagramAnimation {
+    private static let key = "vantagram.animation.durationFactor"
+
+    public static var factor: Double {
+        let value = UserDefaults.standard.double(forKey: key)
+        if value < 0.05 {
+            return 1.0
+        }
+        return value
+    }
+
+    public static func setFactor(_ value: Double) {
+        UserDefaults.standard.set(value, forKey: key)
+    }
+}
+
 public func makeSpringAnimation(_ keyPath: String, duration: Double) -> CABasicAnimation {
     return makeSpringAnimationImpl(keyPath, duration)
 }
