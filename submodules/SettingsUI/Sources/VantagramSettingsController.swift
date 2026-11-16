@@ -12,15 +12,18 @@ private final class VantagramSettingsArguments {
     let updateHideRead: (Bool) -> Void
     let updateHideTyping: (Bool) -> Void
     let updateHideOnline: (Bool) -> Void
+    let updateKeepDeleted: (Bool) -> Void
 
     init(
         updateHideRead: @escaping (Bool) -> Void,
         updateHideTyping: @escaping (Bool) -> Void,
-        updateHideOnline: @escaping (Bool) -> Void
+        updateHideOnline: @escaping (Bool) -> Void,
+        updateKeepDeleted: @escaping (Bool) -> Void
     ) {
         self.updateHideRead = updateHideRead
         self.updateHideTyping = updateHideTyping
         self.updateHideOnline = updateHideOnline
+        self.updateKeepDeleted = updateKeepDeleted
     }
 }
 
@@ -28,18 +31,21 @@ private struct VantagramSettingsState: Equatable {
     var hideRead: Bool
     var hideTyping: Bool
     var hideOnline: Bool
+    var keepDeleted: Bool
 
     static func load() -> VantagramSettingsState {
         return VantagramSettingsState(
             hideRead: VantagramGhost.hideRead,
             hideTyping: VantagramGhost.hideTyping,
-            hideOnline: VantagramGhost.hideOnline
+            hideOnline: VantagramGhost.hideOnline,
+            keepDeleted: VantagramGhost.keepDeleted
         )
     }
 }
 
 private enum VantagramSettingsSection: Int32 {
     case ghost
+    case archive
 }
 
 private enum VantagramSettingsEntry: ItemListNodeEntry {
@@ -49,8 +55,17 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
     case hideOnline(Bool)
     case ghostFooter
 
+    case archiveHeader
+    case keepDeleted(Bool)
+    case archiveFooter
+
     var section: ItemListSectionId {
-        return VantagramSettingsSection.ghost.rawValue
+        switch self {
+        case .ghostHeader, .hideRead, .hideTyping, .hideOnline, .ghostFooter:
+            return VantagramSettingsSection.ghost.rawValue
+        case .archiveHeader, .keepDeleted, .archiveFooter:
+            return VantagramSettingsSection.archive.rawValue
+        }
     }
 
     var stableId: Int32 {
@@ -65,6 +80,12 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return 3
         case .ghostFooter:
             return 4
+        case .archiveHeader:
+            return 5
+        case .keepDeleted:
+            return 6
+        case .archiveFooter:
+            return 7
         }
     }
 
@@ -90,7 +111,15 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
                 arguments.updateHideOnline(value)
             })
         case .ghostFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Ты читаешь сообщения, но собеседник не видит галочки прочтения, набор текста и твой онлайн."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Ты читаешь сообщения, слушаешь голосовые и смотришь истории, а собеседник не видит галочки прочтения, набор текста и твой онлайн."), sectionId: self.section)
+        case .archiveHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "АРХИВ", sectionId: self.section)
+        case let .keepDeleted(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Сохранять удалённые сообщения", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateKeepDeleted(value)
+            })
+        case .archiveFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Если собеседник удалит сообщение, оно останется у тебя в чате. Работает для удалений, пришедших, пока приложение запущено."), sectionId: self.section)
         }
     }
 }
@@ -102,6 +131,9 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.hideTyping(state.hideTyping))
     entries.append(.hideOnline(state.hideOnline))
     entries.append(.ghostFooter)
+    entries.append(.archiveHeader)
+    entries.append(.keepDeleted(state.keepDeleted))
+    entries.append(.archiveFooter)
     return entries
 }
 
@@ -119,6 +151,10 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
         },
         updateHideOnline: { value in
             VantagramGhost.setHideOnline(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateKeepDeleted: { value in
+            VantagramGhost.setKeepDeleted(value)
             statePromise.set(VantagramSettingsState.load())
         }
     )

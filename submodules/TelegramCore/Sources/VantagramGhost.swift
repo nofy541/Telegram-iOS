@@ -22,6 +22,17 @@ public enum VantagramGhost {
         return UserDefaults.standard.bool(forKey: hideOnlineKey)
     }
 
+    private static let keepDeletedKey = "vantagram.archive.keepDeleted"
+
+    /// Keep messages locally when the sender (or the other side) deletes them on the server.
+    public static var keepDeleted: Bool {
+        return UserDefaults.standard.bool(forKey: keepDeletedKey)
+    }
+
+    public static func setKeepDeleted(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: keepDeletedKey)
+    }
+
     public static func setHideRead(_ value: Bool) {
         UserDefaults.standard.set(value, forKey: hideReadKey)
     }

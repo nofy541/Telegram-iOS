@@ -2079,13 +2079,18 @@ func _internal_markStoryAsSeen(account: Account, peerId: PeerId, id: Int32, asPi
             guard let inputPeer = inputPeer else {
                 return .complete()
             }
-            
+
+            // Vantagram ghost mode: do not increment story view counters.
+            if VantagramGhost.hideRead {
+                return .complete()
+            }
+
             #if DEBUG && false
             if "".isEmpty {
                 return .complete()
             }
             #endif
-            
+
             return account.network.request(Api.functions.stories.incrementStoryViews(peer: inputPeer, id: [id]))
             |> `catch` { _ -> Signal<Api.Bool, NoError> in
                 return .single(.boolFalse)
