@@ -1476,6 +1476,9 @@ public class ChatMessageBubbleItemNode: ChatMessageItemView, ChatMessagePreviewI
             self.view.disablesInteractiveTransitionGestureRecognizer = false//!item.context.sharedContext.immediateExperimentalUISettings.unidirectionalSwipeToReply
         }
         replyRecognizer.shouldBegin = { [weak self] in
+            if VantagramGhost.disableSwipeReply {
+                return false
+            }
             if let strongSelf = self, let item = strongSelf.item {
                 if strongSelf.selectionNode != nil {
                     return false

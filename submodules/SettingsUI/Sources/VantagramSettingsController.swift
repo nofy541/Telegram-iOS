@@ -7,6 +7,7 @@ import TelegramPresentationData
 import ItemListUI
 import PresentationDataUtils
 import AccountContext
+import UserNotifications
 
 private let vantagramAnimationSpeeds: [(Double, String)] = [
     (0.35, "Очень быстро"),
@@ -45,6 +46,21 @@ private func vantagramDeletedAlphaTitle(_ alpha: Double) -> String {
     return "\(Int((alpha * 100.0).rounded()))%"
 }
 
+/// Quits the app so that the glass setting is applied everywhere. iOS does not allow an app to relaunch itself,
+/// so a local notification is scheduled that opens the app again with one tap.
+private func vantagramRestartApp() {
+    let content = UNMutableNotificationContent()
+    content.title = "Vantagram"
+    content.body = "Нажми, чтобы открыть приложение с новым оформлением"
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1.5, repeats: false)
+    let request = UNNotificationRequest(identifier: "vantagram.restart", content: content, trigger: trigger)
+    UNUserNotificationCenter.current().add(request) { _ in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            exit(0)
+        }
+    }
+}
+
 private final class VantagramSettingsArguments {
     let updateHideRead: (Bool) -> Void
     let updateHideTyping: (Bool) -> Void
@@ -60,6 +76,10 @@ private final class VantagramSettingsArguments {
     let updateShowSeconds: (Bool) -> Void
     let updateAllowCopy: (Bool) -> Void
     let updateAllowSensitive: (Bool) -> Void
+    let updateHideStories: (Bool) -> Void
+    let updateDisableSwipeReply: (Bool) -> Void
+    let updateHidePhone: (Bool) -> Void
+    let updateOpenLinksExternally: (Bool) -> Void
 
     init(
         updateHideRead: @escaping (Bool) -> Void,
@@ -75,7 +95,11 @@ private final class VantagramSettingsArguments {
         updateGlassEnabled: @escaping (Bool) -> Void,
         updateShowSeconds: @escaping (Bool) -> Void,
         updateAllowCopy: @escaping (Bool) -> Void,
-        updateAllowSensitive: @escaping (Bool) -> Void
+        updateAllowSensitive: @escaping (Bool) -> Void,
+        updateHideStories: @escaping (Bool) -> Void,
+        updateDisableSwipeReply: @escaping (Bool) -> Void,
+        updateHidePhone: @escaping (Bool) -> Void,
+        updateOpenLinksExternally: @escaping (Bool) -> Void
     ) {
         self.updateHideRead = updateHideRead
         self.updateHideTyping = updateHideTyping
@@ -91,6 +115,10 @@ private final class VantagramSettingsArguments {
         self.updateShowSeconds = updateShowSeconds
         self.updateAllowCopy = updateAllowCopy
         self.updateAllowSensitive = updateAllowSensitive
+        self.updateHideStories = updateHideStories
+        self.updateDisableSwipeReply = updateDisableSwipeReply
+        self.updateHidePhone = updateHidePhone
+        self.updateOpenLinksExternally = updateOpenLinksExternally
     }
 }
 
@@ -109,6 +137,10 @@ private struct VantagramSettingsState: Equatable {
     var showSeconds: Bool
     var allowCopy: Bool
     var allowSensitive: Bool
+    var hideStories: Bool
+    var disableSwipeReply: Bool
+    var hidePhone: Bool
+    var openLinksExternally: Bool
 
     static func load() -> VantagramSettingsState {
         return VantagramSettingsState(
@@ -125,7 +157,11 @@ private struct VantagramSettingsState: Equatable {
             glassEnabled: VantagramUI.glassEnabled,
             showSeconds: VantagramGhost.showSeconds,
             allowCopy: VantagramGhost.allowCopy,
-            allowSensitive: VantagramGhost.allowSensitive
+            allowSensitive: VantagramGhost.allowSensitive,
+            hideStories: VantagramGhost.hideStories,
+            disableSwipeReply: VantagramGhost.disableSwipeReply,
+            hidePhone: VantagramGhost.hidePhone,
+            openLinksExternally: VantagramGhost.openLinksExternally
         )
     }
 }
@@ -136,6 +172,7 @@ private enum VantagramSettingsSection: Int32 {
     case interface
     case access
     case misc
+    case chats
 }
 
 private enum VantagramSettingsEntry: ItemListNodeEntry {
@@ -167,6 +204,13 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
     case hideAds(Bool)
     case hidePremium(Bool)
 
+    case chatsHeader
+    case hideStories(Bool)
+    case disableSwipeReply(Bool)
+    case hidePhone(Bool)
+    case openLinksExternally(Bool)
+    case chatsFooter
+
     var section: ItemListSectionId {
         switch self {
         case .ghostHeader, .hideRead, .hideTyping, .hideOnline, .ghostFooter:
@@ -179,6 +223,8 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return VantagramSettingsSection.access.rawValue
         case .miscHeader, .hideAds, .hidePremium:
             return VantagramSettingsSection.misc.rawValue
+        case .chatsHeader, .hideStories, .disableSwipeReply, .hidePhone, .openLinksExternally, .chatsFooter:
+            return VantagramSettingsSection.chats.rawValue
         }
     }
 
@@ -230,6 +276,18 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return 21
         case .hidePremium:
             return 22
+        case .chatsHeader:
+            return 23
+        case .hideStories:
+            return 24
+        case .disableSwipeReply:
+            return 25
+        case .hidePhone:
+            return 26
+        case .openLinksExternally:
+            return 27
+        case .chatsFooter:
+            return 28
         }
     }
 
@@ -293,7 +351,7 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
                 arguments.updateShowSeconds(value)
             })
         case .interfaceFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Логотип под вырезом обычно не виден, но попадает на скриншоты и запись экрана. Если выключить «Liquid Glass», панели и кнопки станут обычными, как до iOS 26. Чтобы это применилось везде, перезапусти приложение."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Логотип под вырезом обычно не виден, но попадает на скриншоты и запись экрана. Если выключить «Liquid Glass», панели и кнопки станут обычными, как до iOS 26. При переключении приложение закроется, а через секунду придёт уведомление: нажми на него, чтобы открыть Vantagram с новым видом (iOS не даёт приложению перезапуститься самому)."), sectionId: self.section)
         case .accessHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "ДОСТУП К КОНТЕНТУ", sectionId: self.section)
         case let .allowCopy(value):
@@ -316,6 +374,26 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрывать предложения Premium", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateHidePremium(value)
             })
+        case .chatsHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ЧАТЫ И СПИСКИ", sectionId: self.section)
+        case let .hideStories(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрыть истории над чатами", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHideStories(value)
+            })
+        case let .disableSwipeReply(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Отключить свайп для ответа", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateDisableSwipeReply(value)
+            })
+        case let .hidePhone(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрыть мой номер телефона", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHidePhone(value)
+            })
+        case let .openLinksExternally(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Ссылки во внешнем браузере", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateOpenLinksExternally(value)
+            })
+        case .chatsFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Истории и свайп применяются после повторного открытия экрана. Номер скрывается только на твоём экране настроек, другим людям он виден по-прежнему."), sectionId: self.section)
         }
     }
 }
@@ -345,6 +423,12 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.miscHeader)
     entries.append(.hideAds(state.hideAds))
     entries.append(.hidePremium(state.hidePremium))
+    entries.append(.chatsHeader)
+    entries.append(.hideStories(state.hideStories))
+    entries.append(.disableSwipeReply(state.disableSwipeReply))
+    entries.append(.hidePhone(state.hidePhone))
+    entries.append(.openLinksExternally(state.openLinksExternally))
+    entries.append(.chatsFooter)
     return entries
 }
 
@@ -460,6 +544,7 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
         updateGlassEnabled: { value in
             VantagramUI.setGlassEnabled(value)
             statePromise.set(VantagramSettingsState.load())
+            vantagramRestartApp()
         },
         updateShowSeconds: { value in
             VantagramGhost.setShowSeconds(value)
@@ -471,6 +556,22 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
         },
         updateAllowSensitive: { value in
             VantagramGhost.setAllowSensitive(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateHideStories: { value in
+            VantagramGhost.setHideStories(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateDisableSwipeReply: { value in
+            VantagramGhost.setDisableSwipeReply(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateHidePhone: { value in
+            VantagramGhost.setHidePhone(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateOpenLinksExternally: { value in
+            VantagramGhost.setOpenLinksExternally(value)
             statePromise.set(VantagramSettingsState.load())
         }
     )

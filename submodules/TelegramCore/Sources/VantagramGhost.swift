@@ -105,6 +105,48 @@ public enum VantagramGhost {
         UserDefaults.standard.set(value, forKey: allowSensitiveKey)
     }
 
+    private static let hideStoriesKey = "vantagram.ui.hideStories"
+    private static let disableSwipeReplyKey = "vantagram.ui.disableSwipeReply"
+    private static let hidePhoneKey = "vantagram.ui.hidePhone"
+
+    /// Hide the stories row above the chat list.
+    public static var hideStories: Bool {
+        return UserDefaults.standard.bool(forKey: hideStoriesKey)
+    }
+
+    public static func setHideStories(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: hideStoriesKey)
+    }
+
+    /// Disable the swipe-to-reply gesture on messages.
+    public static var disableSwipeReply: Bool {
+        return UserDefaults.standard.bool(forKey: disableSwipeReplyKey)
+    }
+
+    public static func setDisableSwipeReply(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: disableSwipeReplyKey)
+    }
+
+    /// Mask my own phone number on the settings screen.
+    public static var hidePhone: Bool {
+        return UserDefaults.standard.bool(forKey: hidePhoneKey)
+    }
+
+    public static func setHidePhone(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: hidePhoneKey)
+    }
+
+    private static let openLinksExternallyKey = "vantagram.ui.openLinksExternally"
+
+    /// Open web links in the system browser instead of the in-app browser.
+    public static var openLinksExternally: Bool {
+        return UserDefaults.standard.bool(forKey: openLinksExternallyKey)
+    }
+
+    public static func setOpenLinksExternally(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: openLinksExternallyKey)
+    }
+
     private static let hidePremiumKey = "vantagram.misc.hidePremium"
 
     /// Hide Telegram Premium purchase promotions across the app.

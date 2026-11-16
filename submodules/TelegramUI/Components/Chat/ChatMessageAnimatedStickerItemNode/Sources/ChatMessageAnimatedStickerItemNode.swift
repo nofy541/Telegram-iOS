@@ -326,6 +326,9 @@ public class ChatMessageAnimatedStickerItemNode: ChatMessageItemView {
             self.view.disablesInteractiveTransitionGestureRecognizer = false
         }
         replyRecognizer.shouldBegin = { [weak self] in
+            if VantagramGhost.disableSwipeReply {
+                return false
+            }
             if let strongSelf = self, let item = strongSelf.item {
                 if strongSelf.selectionNode != nil {
                     return false
