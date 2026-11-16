@@ -960,6 +960,10 @@ public final class AccountViewTracker {
                     
                     if let account = self.account {
                         let signal = (account.postbox.transaction { transaction -> Signal<Void, NoError> in
+                            // Vantagram ghost mode: do not report seen live locations.
+                            if VantagramGhost.hideRead {
+                                return .complete()
+                            }
                             if let peer = transaction.getPeer(peerId), let inputPeer = apiInputPeer(peer) {
                                 let request: Signal<Bool, MTRpcError>
                                 switch inputPeer {

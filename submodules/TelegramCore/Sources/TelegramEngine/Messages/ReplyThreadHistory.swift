@@ -477,6 +477,11 @@ private class ReplyThreadHistoryContextImpl {
                 }
             }
 
+            // Vantagram ghost mode: do not tell the server that the thread was read.
+            if VantagramGhost.hideRead {
+                return
+            }
+
             if let subPeerId {
                 let signal = strongSelf.account.network.request(Api.functions.messages.readSavedHistory(parentPeer: inputPeer, peer: subPeerId, maxId: messageIndex.id.id))
                 |> `catch` { _ -> Signal<Api.Bool, NoError> in

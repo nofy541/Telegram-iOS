@@ -4597,8 +4597,9 @@ func replayFinalState(
             case let .DeleteEphemeralMessages(peerId, ids):
                 deleteEphemeralMessages(transaction: transaction, peerId: peerId, ids: ids)
             case let .DeleteMessagesWithGlobalIds(ids):
-                // Vantagram: keep messages that were deleted remotely.
+                // Vantagram: keep messages that were deleted remotely, and mark them.
                 if VantagramGhost.keepDeleted {
+                    vantagramMarkMessagesAsDeleted(transaction: transaction, ids: transaction.messageIdsForGlobalIds(ids))
                     break
                 }
                 var resourceIds: [MediaResourceId] = []
@@ -4610,8 +4611,9 @@ func replayFinalState(
                 }
                 deletedMessageIds.append(contentsOf: ids.map { .global($0) })
             case let .DeleteMessages(ids):
-                // Vantagram: keep messages that were deleted remotely.
+                // Vantagram: keep messages that were deleted remotely, and mark them.
                 if VantagramGhost.keepDeleted {
+                    vantagramMarkMessagesAsDeleted(transaction: transaction, ids: ids)
                     break
                 }
                 _internal_deleteMessages(transaction: transaction, mediaBox: mediaBox, ids: ids, manualAddMessageThreadStatsDifference: { id, add, remove in

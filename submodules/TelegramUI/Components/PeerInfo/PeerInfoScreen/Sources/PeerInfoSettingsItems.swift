@@ -15,6 +15,7 @@ import PeerNameColorItem
 import WalletContext
 
 enum SettingsSection: Int, CaseIterable {
+    case vantagram
     case edit
     case phone
     case accounts
@@ -265,9 +266,6 @@ func settingsItems(data: PeerInfoScreenData?, context: AccountContext, presentat
     items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 3, text: presentationData.strings.Settings_Appearance, icon: PresentationResourcesSettings.appearance, action: {
         interaction.openSettings(.appearance)
     }))
-    items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 50, text: "Vantagram", icon: PresentationResourcesSettings.appearance, action: {
-        interaction.openSettings(.vantagram)
-    }))
     
     items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 6, label: .text(data.isPowerSavingEnabled == true ? presentationData.strings.Settings_PowerSavingOn : presentationData.strings.Settings_PowerSavingOff), text: presentationData.strings.Settings_PowerSaving, icon: PresentationResourcesSettings.powerSaving, action: {
         interaction.openSettings(.powerSaving)
@@ -354,7 +352,12 @@ func settingsItems(data: PeerInfoScreenData?, context: AccountContext, presentat
     items[.support]!.append(PeerInfoScreenDisclosureItem(id: 2, text: presentationData.strings.Settings_Tips, icon: PresentationResourcesSettings.tips, action: {
         interaction.openSettings(.tips)
     }))
-    
+
+    // Vantagram mod settings: first section of the list, with its own icon.
+    items[.vantagram]!.append(PeerInfoScreenDisclosureItem(id: 0, text: "Vantagram", icon: vantagramSettingsIcon(), action: {
+        interaction.openSettings(.vantagram)
+    }))
+
     var result: [(AnyHashable, [PeerInfoScreenItem])] = []
     for section in SettingsSection.allCases {
         if let sectionItems = items[section], !sectionItems.isEmpty {
