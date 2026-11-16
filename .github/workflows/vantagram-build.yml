@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/telegram-bazel-cache
-          key: bazel-${{ runner.os }}-${{ hashFiles('MODULE.bazel.lock') }}
+          key: bazel-${{ runner.os }}-${{ github.run_id }}
           restore-keys: bazel-${{ runner.os }}-
 
       - name: Refresh expired fake provisioning profiles
