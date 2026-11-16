@@ -29,6 +29,17 @@ public enum VantagramGhost {
         return UserDefaults.standard.bool(forKey: keepDeletedKey)
     }
 
+    private static let hideAdsKey = "vantagram.misc.hideAds"
+
+    /// Never load sponsored messages in channels.
+    public static var hideAds: Bool {
+        return UserDefaults.standard.bool(forKey: hideAdsKey)
+    }
+
+    public static func setHideAds(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: hideAdsKey)
+    }
+
     public static func setKeepDeleted(_ value: Bool) {
         UserDefaults.standard.set(value, forKey: keepDeletedKey)
     }

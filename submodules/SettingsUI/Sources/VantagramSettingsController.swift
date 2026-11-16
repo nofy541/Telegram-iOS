@@ -13,17 +13,20 @@ private final class VantagramSettingsArguments {
     let updateHideTyping: (Bool) -> Void
     let updateHideOnline: (Bool) -> Void
     let updateKeepDeleted: (Bool) -> Void
+    let updateHideAds: (Bool) -> Void
 
     init(
         updateHideRead: @escaping (Bool) -> Void,
         updateHideTyping: @escaping (Bool) -> Void,
         updateHideOnline: @escaping (Bool) -> Void,
-        updateKeepDeleted: @escaping (Bool) -> Void
+        updateKeepDeleted: @escaping (Bool) -> Void,
+        updateHideAds: @escaping (Bool) -> Void
     ) {
         self.updateHideRead = updateHideRead
         self.updateHideTyping = updateHideTyping
         self.updateHideOnline = updateHideOnline
         self.updateKeepDeleted = updateKeepDeleted
+        self.updateHideAds = updateHideAds
     }
 }
 
@@ -32,13 +35,15 @@ private struct VantagramSettingsState: Equatable {
     var hideTyping: Bool
     var hideOnline: Bool
     var keepDeleted: Bool
+    var hideAds: Bool
 
     static func load() -> VantagramSettingsState {
         return VantagramSettingsState(
             hideRead: VantagramGhost.hideRead,
             hideTyping: VantagramGhost.hideTyping,
             hideOnline: VantagramGhost.hideOnline,
-            keepDeleted: VantagramGhost.keepDeleted
+            keepDeleted: VantagramGhost.keepDeleted,
+            hideAds: VantagramGhost.hideAds
         )
     }
 }
@@ -46,6 +51,7 @@ private struct VantagramSettingsState: Equatable {
 private enum VantagramSettingsSection: Int32 {
     case ghost
     case archive
+    case misc
 }
 
 private enum VantagramSettingsEntry: ItemListNodeEntry {
@@ -59,12 +65,17 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
     case keepDeleted(Bool)
     case archiveFooter
 
+    case miscHeader
+    case hideAds(Bool)
+
     var section: ItemListSectionId {
         switch self {
         case .ghostHeader, .hideRead, .hideTyping, .hideOnline, .ghostFooter:
             return VantagramSettingsSection.ghost.rawValue
         case .archiveHeader, .keepDeleted, .archiveFooter:
             return VantagramSettingsSection.archive.rawValue
+        case .miscHeader, .hideAds:
+            return VantagramSettingsSection.misc.rawValue
         }
     }
 
@@ -86,6 +97,10 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             return 6
         case .archiveFooter:
             return 7
+        case .miscHeader:
+            return 8
+        case .hideAds:
+            return 9
         }
     }
 
@@ -120,6 +135,12 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
             })
         case .archiveFooter:
             return ItemListTextItem(presentationData: presentationData, text: .plain("Если собеседник удалит сообщение, оно останется у тебя в чате. Работает для удалений, пришедших, пока приложение запущено."), sectionId: self.section)
+        case .miscHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ПРОЧЕЕ", sectionId: self.section)
+        case let .hideAds(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрывать рекламу в каналах", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHideAds(value)
+            })
         }
     }
 }
@@ -134,6 +155,8 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.archiveHeader)
     entries.append(.keepDeleted(state.keepDeleted))
     entries.append(.archiveFooter)
+    entries.append(.miscHeader)
+    entries.append(.hideAds(state.hideAds))
     return entries
 }
 
@@ -155,6 +178,10 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
         },
         updateKeepDeleted: { value in
             VantagramGhost.setKeepDeleted(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        updateHideAds: { value in
+            VantagramGhost.setHideAds(value)
             statePromise.set(VantagramSettingsState.load())
         }
     )
