@@ -39,6 +39,17 @@ public enum VantagramUI {
         UserDefaults.standard.set(!value, forKey: glassKey)
     }
 
+    private static let appSwitcherBlurKey = "vantagram.ui.appSwitcherBlur"
+
+    /// Blur the screen content while the app is inactive (hides it in the app switcher).
+    public static var appSwitcherBlur: Bool {
+        return UserDefaults.standard.bool(forKey: appSwitcherBlurKey)
+    }
+
+    public static func setAppSwitcherBlur(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: appSwitcherBlurKey)
+    }
+
     private static let fontKey = "vantagram.ui.fontDesign"
 
     /// Interface font design: "default", "rounded", "serif" or "monospaced". Read once at launch,

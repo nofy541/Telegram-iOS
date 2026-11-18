@@ -2010,8 +2010,11 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
     func handleWillResignActive() {
         self.isActiveValue = false
         self.isActivePromise.set(false)
+        if VantagramUI.appSwitcherBlur {
+            vantagramShowPrivacyCover(in: self.window)
+        }
         self.clearNotificationsManager?.commitNow()
-        
+
         if let navigationController = self.mainWindow.viewController as? NavigationController {
             for controller in navigationController.viewControllers {
                 if let controller = controller as? TabBarController {
@@ -2118,6 +2121,7 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         self.isInForegroundPromise.set(true)
         self.isActiveValue = true
         self.isActivePromise.set(true)
+        vantagramHidePrivacyCover()
 
         self.resetBadge()
         
@@ -3493,4 +3497,23 @@ final class UpdateSettings: Codable, Equatable {
     static func ==(lhs: UpdateSettings, rhs: UpdateSettings) -> Bool {
         return lhs.url == rhs.url
     }
+}
+
+private var vantagramPrivacyCover: UIView?
+
+/// Vantagram: covers the window with a blur while the app is inactive, so that the app switcher snapshot hides the content.
+private func vantagramShowPrivacyCover(in window: UIWindow?) {
+    guard vantagramPrivacyCover == nil, let window = window else {
+        return
+    }
+    let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+    view.frame = window.bounds
+    view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    window.addSubview(view)
+    vantagramPrivacyCover = view
+}
+
+private func vantagramHidePrivacyCover() {
+    vantagramPrivacyCover?.removeFromSuperview()
+    vantagramPrivacyCover = nil
 }

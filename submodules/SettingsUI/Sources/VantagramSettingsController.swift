@@ -8,6 +8,9 @@ import ItemListUI
 import PresentationDataUtils
 import AccountContext
 import UserNotifications
+import AlertUI
+import StorageUsageScreen
+import TelegramUIPreferences
 
 private let vantagramAnimationSpeeds: [(Double, String)] = [
     (0.35, "Очень быстро"),
@@ -78,6 +81,13 @@ private func vantagramRestartApp() {
 }
 
 private final class VantagramSettingsArguments {
+    let updateAppSwitcherBlur: (Bool) -> Void
+    let openStorage: () -> Void
+    let exportBackup: () -> Void
+    let importBackup: () -> Void
+    let openDesignTheme: () -> Void
+    let openDesignTextSize: () -> Void
+    let openDesignBubbles: () -> Void
     let updateHideRead: (Bool) -> Void
     let updateHideTyping: (Bool) -> Void
     let updateHideOnline: (Bool) -> Void
@@ -99,6 +109,13 @@ private final class VantagramSettingsArguments {
     let updateOpenLinksExternally: (Bool) -> Void
 
     init(
+        updateAppSwitcherBlur: @escaping (Bool) -> Void,
+        openStorage: @escaping () -> Void,
+        exportBackup: @escaping () -> Void,
+        importBackup: @escaping () -> Void,
+        openDesignTheme: @escaping () -> Void,
+        openDesignTextSize: @escaping () -> Void,
+        openDesignBubbles: @escaping () -> Void,
         updateHideRead: @escaping (Bool) -> Void,
         updateHideTyping: @escaping (Bool) -> Void,
         updateHideOnline: @escaping (Bool) -> Void,
@@ -119,6 +136,13 @@ private final class VantagramSettingsArguments {
         updateHidePhone: @escaping (Bool) -> Void,
         updateOpenLinksExternally: @escaping (Bool) -> Void
     ) {
+        self.updateAppSwitcherBlur = updateAppSwitcherBlur
+        self.openStorage = openStorage
+        self.exportBackup = exportBackup
+        self.importBackup = importBackup
+        self.openDesignTheme = openDesignTheme
+        self.openDesignTextSize = openDesignTextSize
+        self.openDesignBubbles = openDesignBubbles
         self.updateHideRead = updateHideRead
         self.updateHideTyping = updateHideTyping
         self.updateHideOnline = updateHideOnline
@@ -151,6 +175,7 @@ private struct VantagramSettingsState: Equatable {
     var hideAds: Bool
     var animationFactor: Double
     var fontDesign: String
+    var appSwitcherBlur: Bool
     var notchBadge: Bool
     var hidePremium: Bool
     var glassEnabled: Bool
@@ -173,6 +198,7 @@ private struct VantagramSettingsState: Equatable {
             hideAds: VantagramGhost.hideAds,
             animationFactor: VantagramAnimation.factor,
             fontDesign: VantagramUI.storedFontDesign,
+            appSwitcherBlur: VantagramUI.appSwitcherBlur,
             notchBadge: VantagramGhost.notchBadge,
             hidePremium: VantagramGhost.hidePremium,
             glassEnabled: VantagramUI.glassEnabled,
@@ -188,6 +214,8 @@ private struct VantagramSettingsState: Equatable {
 }
 
 private enum VantagramSettingsSection: Int32 {
+    case tools
+    case design
     case ghost
     case archive
     case interface
@@ -197,6 +225,19 @@ private enum VantagramSettingsSection: Int32 {
 }
 
 private enum VantagramSettingsEntry: ItemListNodeEntry {
+    case toolsHeader
+    case appSwitcherBlur(Bool)
+    case openStorage
+    case backupExport
+    case backupImport
+    case toolsFooter
+
+    case designHeader
+    case designTheme
+    case designTextSize
+    case designBubbles
+    case designFooter
+
     case ghostHeader
     case hideRead(Bool)
     case hideTyping(Bool)
@@ -235,6 +276,10 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
 
     var section: ItemListSectionId {
         switch self {
+        case .toolsHeader, .appSwitcherBlur, .openStorage, .backupExport, .backupImport, .toolsFooter:
+            return VantagramSettingsSection.tools.rawValue
+        case .designHeader, .designTheme, .designTextSize, .designBubbles, .designFooter:
+            return VantagramSettingsSection.design.rawValue
         case .ghostHeader, .hideRead, .hideTyping, .hideOnline, .ghostFooter:
             return VantagramSettingsSection.ghost.rawValue
         case .archiveHeader, .keepDeleted, .deletedIcon, .deletedAlpha, .archiveFooter:
@@ -252,6 +297,28 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
 
     var stableId: Int32 {
         switch self {
+        case .toolsHeader:
+            return 30
+        case .appSwitcherBlur:
+            return 31
+        case .openStorage:
+            return 32
+        case .backupExport:
+            return 33
+        case .backupImport:
+            return 34
+        case .toolsFooter:
+            return 35
+        case .designHeader:
+            return -5
+        case .designTheme:
+            return -4
+        case .designTextSize:
+            return -3
+        case .designBubbles:
+            return -2
+        case .designFooter:
+            return -1
         case .ghostHeader:
             return 0
         case .hideRead:
@@ -322,6 +389,42 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
     func item(presentationData: ItemListPresentationData, arguments: Any) -> ListViewItem {
         let arguments = arguments as! VantagramSettingsArguments
         switch self {
+        case .toolsHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ПРИВАТНОСТЬ И ДАННЫЕ", sectionId: self.section)
+        case let .appSwitcherBlur(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Размывать экран в переключателе", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateAppSwitcherBlur(value)
+            })
+        case .openStorage:
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Хранилище и чистка кэша", label: "", sectionId: self.section, style: .blocks, action: {
+                arguments.openStorage()
+            })
+        case .backupExport:
+            return ItemListActionItem(presentationData: presentationData, systemStyle: .glass, title: "Экспорт настроек Vantagram", kind: .generic, alignment: .natural, sectionId: self.section, style: .blocks, action: {
+                arguments.exportBackup()
+            })
+        case .backupImport:
+            return ItemListActionItem(presentationData: presentationData, systemStyle: .glass, title: "Импорт настроек из буфера обмена", kind: .generic, alignment: .natural, sectionId: self.section, style: .blocks, action: {
+                arguments.importBackup()
+            })
+        case .toolsFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Размытие скрывает содержимое в списке недавних приложений. Экспорт отдаёт все настройки Vantagram текстом (JSON): сохрани его в заметки или отправь себе. Чтобы восстановить, скопируй этот текст и нажми «Импорт». После импорта перезапусти приложение."), sectionId: self.section)
+        case .designHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ДИЗАЙН", sectionId: self.section)
+        case .designTheme:
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Оформление и темы", label: "", sectionId: self.section, style: .blocks, action: {
+                arguments.openDesignTheme()
+            })
+        case .designTextSize:
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Размер текста", label: "", sectionId: self.section, style: .blocks, action: {
+                arguments.openDesignTextSize()
+            })
+        case .designBubbles:
+            return ItemListDisclosureItem(presentationData: presentationData, systemStyle: .glass, title: "Форма пузырей", label: "", sectionId: self.section, style: .blocks, action: {
+                arguments.openDesignBubbles()
+            })
+        case .designFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Эти экраны показывают пример чата: двигаешь ползунок, и результат виден сразу."), sectionId: self.section)
         case .ghostHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "GHOST MODE", sectionId: self.section)
         case let .hideRead(value):
@@ -428,6 +531,11 @@ private enum VantagramSettingsEntry: ItemListNodeEntry {
 
 private func vantagramSettingsEntries(state: VantagramSettingsState) -> [VantagramSettingsEntry] {
     var entries: [VantagramSettingsEntry] = []
+    entries.append(.designHeader)
+    entries.append(.designTheme)
+    entries.append(.designTextSize)
+    entries.append(.designBubbles)
+    entries.append(.designFooter)
     entries.append(.ghostHeader)
     entries.append(.hideRead(state.hideRead))
     entries.append(.hideTyping(state.hideTyping))
@@ -458,6 +566,12 @@ private func vantagramSettingsEntries(state: VantagramSettingsState) -> [Vantagr
     entries.append(.hidePhone(state.hidePhone))
     entries.append(.openLinksExternally(state.openLinksExternally))
     entries.append(.chatsFooter)
+    entries.append(.toolsHeader)
+    entries.append(.appSwitcherBlur(state.appSwitcherBlur))
+    entries.append(.openStorage)
+    entries.append(.backupExport)
+    entries.append(.backupImport)
+    entries.append(.toolsFooter)
     return entries
 }
 
@@ -465,8 +579,57 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
     let statePromise = ValuePromise(VantagramSettingsState.load(), ignoreRepeated: true)
 
     var pushControllerImpl: ((ViewController) -> Void)?
+    var presentControllerImpl: ((ViewController) -> Void)?
 
     let arguments = VantagramSettingsArguments(
+        updateAppSwitcherBlur: { value in
+            VantagramUI.setAppSwitcherBlur(value)
+            statePromise.set(VantagramSettingsState.load())
+        },
+        openStorage: {
+            pushControllerImpl?(StorageUsageScreen(context: context, makeStorageUsageExceptionsScreen: { category in
+                return storageUsageExceptionsScreen(context: context, category: category)
+            }))
+        },
+        exportBackup: {
+            let presentationData = context.sharedContext.currentPresentationData.with { $0 }
+            if let text = VantagramBackup.exportJSON() {
+                context.sharedContext.mainWindow?.presentNative(UIActivityViewController(activityItems: [text], applicationActivities: nil))
+            } else {
+                presentControllerImpl?(textAlertController(context: context, title: nil, text: "Не удалось собрать настройки.", actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_OK, action: {})]))
+            }
+        },
+        importBackup: {
+            let presentationData = context.sharedContext.currentPresentationData.with { $0 }
+            let count = VantagramBackup.importJSON(UIPasteboard.general.string ?? "")
+            let message: String
+            if count > 0 {
+                message = "Импортировано настроек: \(count). Перезапусти приложение, чтобы они применились."
+            } else {
+                message = "В буфере обмена нет настроек Vantagram. Скопируй текст экспорта и попробуй снова."
+            }
+            statePromise.set(VantagramSettingsState.load())
+            presentControllerImpl?(textAlertController(context: context, title: nil, text: message, actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_OK, action: {})]))
+        },
+        openDesignTheme: {
+            pushControllerImpl?(themeSettingsController(context: context))
+        },
+        openDesignTextSize: {
+            let _ = (context.sharedContext.accountManager.sharedData(keys: Set([ApplicationSpecificSharedDataKeys.presentationThemeSettings]))
+            |> take(1)
+            |> deliverOnMainQueue).start(next: { view in
+                let settings = view.entries[ApplicationSpecificSharedDataKeys.presentationThemeSettings]?.get(PresentationThemeSettings.self) ?? PresentationThemeSettings.defaultSettings
+                pushControllerImpl?(TextSizeSelectionController(context: context, presentationThemeSettings: settings))
+            })
+        },
+        openDesignBubbles: {
+            let _ = (context.sharedContext.accountManager.sharedData(keys: Set([ApplicationSpecificSharedDataKeys.presentationThemeSettings]))
+            |> take(1)
+            |> deliverOnMainQueue).start(next: { view in
+                let settings = view.entries[ApplicationSpecificSharedDataKeys.presentationThemeSettings]?.get(PresentationThemeSettings.self) ?? PresentationThemeSettings.defaultSettings
+                pushControllerImpl?(BubbleSettingsController(context: context, presentationThemeSettings: settings))
+            })
+        },
         updateHideRead: { value in
             VantagramGhost.setHideRead(value)
             statePromise.set(VantagramSettingsState.load())
@@ -642,6 +805,9 @@ public func vantagramSettingsController(context: AccountContext) -> ViewControll
     let controller = ItemListController(context: context, state: signal)
     pushControllerImpl = { [weak controller] c in
         controller?.push(c)
+    }
+    presentControllerImpl = { [weak controller] c in
+        controller?.present(c, in: .window(.root))
     }
     return controller
 }
