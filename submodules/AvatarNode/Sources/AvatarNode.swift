@@ -738,7 +738,7 @@ public final class AvatarNode: ASDisplayNode {
                 self.imageNode.cornerRadius = 0.0
             case .round:
                 self.imageNode.clipsToBounds = true
-                self.imageNode.cornerRadius = displayDimensions.height * 0.5
+                self.imageNode.cornerRadius = displayDimensions.height * VantagramUI.avatarRadiusFactor
             case .roundedRect:
                 self.imageNode.clipsToBounds = true
                 self.imageNode.cornerRadius = displayDimensions.height * 0.25
@@ -970,8 +970,12 @@ public final class AvatarNode: ASDisplayNode {
                 
                 if case .round = parameters.clipStyle {
                     context.beginPath()
-                    context.addEllipse(in: CGRect(x: 0.0, y: 0.0, width: bounds.size.width, height:
-                        bounds.size.height))
+                    if VantagramUI.avatarRadiusFactor < 0.499 {
+                        context.addPath(UIBezierPath(roundedRect: CGRect(x: 0.0, y: 0.0, width: bounds.size.width, height: bounds.size.height), cornerRadius: floor(bounds.size.width * VantagramUI.avatarRadiusFactor)).cgPath)
+                    } else {
+                        context.addEllipse(in: CGRect(x: 0.0, y: 0.0, width: bounds.size.width, height:
+                            bounds.size.height))
+                    }
                     context.clip()
                 } else if case .roundedRect = parameters.clipStyle {
                     context.beginPath()

@@ -290,21 +290,10 @@ public struct Font {
     
     /// Vantagram: applies the chosen interface font design to a system font.
     private static func vantagramStyled(_ font: UIFont) -> UIFont {
-        let design: UIFontDescriptor.SystemDesign
-        switch VantagramUI.fontDesign {
-        case "rounded":
-            design = .rounded
-        case "serif":
-            design = .serif
-        case "monospaced":
-            design = .monospaced
-        default:
+        if VantagramUI.fontDesign == "default" {
             return font
         }
-        if let descriptor = font.fontDescriptor.withDesign(design) {
-            return UIFont(descriptor: descriptor, size: font.pointSize)
-        }
-        return font
+        return VantagramUI.applyFontDesign(font, design: VantagramUI.fontDesign)
     }
 
     public static func regular(_ size: CGFloat) -> UIFont {

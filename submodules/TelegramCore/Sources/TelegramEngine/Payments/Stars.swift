@@ -1107,13 +1107,20 @@ public final class StarsContext {
             let disposable = MetaDisposable()
             self.impl.with { impl in
                 disposable.set(impl.state.start(next: { value in
-                    subscriber.putNext(value)
+                    // Vantagram: the local bonus is only a visual addition to the balance.
+                    let bonus = VantagramGhost.localStarsBonus
+                    if bonus > 0, var adjusted = value {
+                        adjusted.balance = StarsAmount(value: adjusted.balance.value + bonus, nanos: adjusted.balance.nanos)
+                        subscriber.putNext(adjusted)
+                    } else {
+                        subscriber.putNext(value)
+                    }
                 }))
             }
             return disposable
         }
     }
-    
+
     var peerId: EnginePeer.Id {
         var peerId: EnginePeer.Id?
         self.impl.syncWith { impl in

@@ -798,7 +798,16 @@ private func revealOptions(strings: PresentationStrings, theme: PresentationThem
             }
         }
     }
-    return options
+    return vantagramFilterRevealOptions(options)
+}
+
+/// Vantagram: removes the swipe actions the user chose to hide.
+private func vantagramFilterRevealOptions(_ options: [ItemListRevealOption]) -> [ItemListRevealOption] {
+    let hidden = VantagramUI.hiddenSwipeKeys
+    if hidden.isEmpty {
+        return options
+    }
+    return options.filter { !hidden.contains($0.key) }
 }
 
 private func groupReferenceRevealOptions(strings: PresentationStrings, theme: PresentationTheme, isEditing: Bool, hiddenByDefault: Bool) -> [ItemListRevealOption] {
@@ -2023,7 +2032,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 }
             }
             
-            var avatarDiameter = min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0))
+            var avatarDiameter = floor(min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0)) * VantagramUI.chatListAvatarScale)
             
             if case let .peer(peerData) = item.content, let customMessageListData = peerData.customMessageListData, customMessageListData.commandPrefix != nil {
                 avatarDiameter = 40.0
@@ -2562,7 +2571,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             let enableChatListPhotos = true
             
             // if changed, adjust setupItem accordingly
-            var avatarDiameter = min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0))
+            var avatarDiameter = floor(min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0)) * VantagramUI.chatListAvatarScale)
             let avatarLeftEdgeInset: CGFloat = item.useCommunityViewLayout ? 10.0 : 16.0
             let avatarLeftInset: CGFloat
             
@@ -4054,7 +4063,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             
             let titleSpacing: CGFloat = -1.0
             let authorSpacing: CGFloat = -3.0
-            var itemHeight: CGFloat = 8.0 * 2.0 + 1.0
+            var itemHeight: CGFloat = VantagramUI.chatListRowPadding * 2.0 + 1.0
             itemHeight -= 21.0
             if case let .peer(peerData) = item.content, let customMessageListData = peerData.customMessageListData, customMessageListData.commandPrefix != nil {
                 itemHeight += measureLayout.size.height * 2.0
@@ -4066,7 +4075,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 itemHeight += authorSpacing
             }
                         
-            let rawContentRect = CGRect(origin: CGPoint(x: 2.0, y: layoutOffset + floor(item.presentationData.fontSize.itemListBaseFontSize * 8.0 / 17.0)), size: CGSize(width: rawContentWidth, height: itemHeight - 12.0 - 9.0))
+            let rawContentRect = CGRect(origin: CGPoint(x: 2.0, y: layoutOffset + floor(item.presentationData.fontSize.itemListBaseFontSize * VantagramUI.chatListRowPadding / 17.0)), size: CGSize(width: rawContentWidth, height: itemHeight - 12.0 - 9.0))
             
             let insets = ChatListItemNode.insets(first: first, last: last, firstWithHeader: firstWithHeader)
             var heightOffset: CGFloat = 0.0

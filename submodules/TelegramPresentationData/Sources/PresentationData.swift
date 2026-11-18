@@ -425,7 +425,7 @@ public func currentPresentationDataAndSettings(accountManager: AccountManager<Te
         
         let (chatFontSize, listsFontSize) = resolveFontSize(settings: themeSettings)
         
-        let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
+        let chatBubbleCorners = vantagramAdjustedBubbleCorners(PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners))
         
         return InitialPresentationDataAndSettings(presentationData: PresentationData(strings: stringsValue, theme: theme, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji), automaticMediaDownloadSettings: automaticMediaDownloadSettings, autodownloadSettings: autodownloadSettings, callListSettings: callListSettings, inAppNotificationSettings: inAppNotificationSettings, mediaInputSettings: mediaInputSettings, mediaDisplaySettings: mediaDisplaySettings, stickerSettings: stickerSettings, chatSettings: chatSettings, experimentalUISettings: experimentalUISettings)
     }
@@ -832,7 +832,7 @@ public func updatedPresentationData(accountManager: AccountManager<TelegramAccou
                         
                         let (chatFontSize, listsFontSize) = resolveFontSize(settings: themeSettings)
                         
-                        let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
+                        let chatBubbleCorners = vantagramAdjustedBubbleCorners(PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners))
                         
                         return PresentationData(strings: stringsValue, theme: themeValue, autoNightModeTriggered: autoNightModeTriggered, chatWallpaper: effectiveChatWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
                     }
@@ -867,7 +867,7 @@ public func defaultPresentationData() -> PresentationData {
     
     let (chatFontSize, listsFontSize) = resolveFontSize(settings: themeSettings)
     
-    let chatBubbleCorners = PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners)
+    let chatBubbleCorners = vantagramAdjustedBubbleCorners(PresentationChatBubbleCorners(mainRadius: CGFloat(themeSettings.chatBubbleSettings.mainRadius), auxiliaryRadius: CGFloat(themeSettings.chatBubbleSettings.auxiliaryRadius), mergeBubbleCorners: themeSettings.chatBubbleSettings.mergeBubbleCorners))
     
     return PresentationData(strings: defaultPresentationStrings, theme: defaultPresentationTheme, autoNightModeTriggered: false, chatWallpaper: defaultPresentationTheme.chat.defaultWallpaper, chatFontSize: chatFontSize, chatBubbleCorners: chatBubbleCorners, listsFontSize: listsFontSize, dateTimeFormat: dateTimeFormat, nameDisplayOrder: nameDisplayOrder, nameSortOrder: nameSortOrder, reduceMotion: themeSettings.reduceMotion, largeEmoji: themeSettings.largeEmoji)
 }
@@ -910,4 +910,18 @@ public func themeDisplayName(strings: PresentationStrings, reference: Presentati
         }
     }
     return name
+}
+
+/// Vantagram: user-chosen bubble radius and tails override the values from the theme settings.
+private func vantagramAdjustedBubbleCorners(_ corners: PresentationChatBubbleCorners) -> PresentationChatBubbleCorners {
+    var result = corners
+    let main = VantagramUI.bubbleMainRadius
+    if main >= 0.0 {
+        result.mainRadius = CGFloat(main)
+        result.auxiliaryRadius = min(corners.auxiliaryRadius, CGFloat(main))
+    }
+    if VantagramUI.bubbleNoTails {
+        result.hasTails = false
+    }
+    return result
 }

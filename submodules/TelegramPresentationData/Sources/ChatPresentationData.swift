@@ -54,13 +54,13 @@ public final class ChatPresentationData {
         self.isPreview = isPreview
         
         let baseFontSize = fontSize.baseDisplaySize
-        self.messageFont = Font.regular(baseFontSize)
+        self.messageFont = VantagramUI.applyFontDesign(Font.regular(baseFontSize), design: VantagramUI.messageFontDesign)
         self.messageEmojiFont = Font.regular(53.0)
-        self.messageBoldFont = Font.bold(baseFontSize)
-        self.messageItalicFont = Font.italic(baseFontSize)
-        self.messageBoldItalicFont = Font.semiboldItalic(baseFontSize)
+        self.messageBoldFont = VantagramUI.applyFontDesign(Font.bold(baseFontSize), design: VantagramUI.messageFontDesign)
+        self.messageItalicFont = VantagramUI.applyFontDesign(Font.italic(baseFontSize), design: VantagramUI.messageFontDesign)
+        self.messageBoldItalicFont = VantagramUI.applyFontDesign(Font.semiboldItalic(baseFontSize), design: VantagramUI.messageFontDesign)
         self.messageFixedFont = Font.monospace(baseFontSize)
-        self.messageBlockQuoteFont = Font.regular(baseFontSize - 1.0)
+        self.messageBlockQuoteFont = VantagramUI.applyFontDesign(Font.regular(baseFontSize - 1.0), design: VantagramUI.messageFontDesign)
         
         self.animatedEmojiScale = animatedEmojiScale
     }

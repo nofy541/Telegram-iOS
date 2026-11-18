@@ -21,6 +21,7 @@ import Emoji
 import PersistentStringHash
 import GridMessageSelectionNode
 import AppBundle
+import UndoUI
 import Markdown
 import TelegramStringFormatting
 import WallpaperBackgroundNode
@@ -5824,10 +5825,37 @@ public class ChatMessageBubbleItemNode: ChatMessageItemView, ChatMessagePreviewI
         super.animateFrameTransition(progress, currentValue)
     }
     
+    /// Vantagram: user-chosen action for a double tap. Returns false when Telegram's own behavior should run.
+    private func vantagramPerformDoubleTap(item: ChatMessageItem) -> Bool {
+        switch VantagramUI.doubleTapAction {
+        case "reply":
+            item.controllerInteraction.setupReply(item.message.id)
+            return true
+        case "copy":
+            if item.associatedData.isCopyProtectionEnabled || item.message.isCopyProtected() {
+                return false
+            }
+            if item.message.text.isEmpty {
+                return false
+            }
+            UIPasteboard.general.string = item.message.text
+            item.controllerInteraction.displayUndo(.copy(text: item.presentationData.strings.Conversation_MessageCopied))
+            return true
+        case "none":
+            return true
+        default:
+            return false
+        }
+    }
+
     @objc private func tapLongTapOrDoubleTapGesture(_ recognizer: TapLongTapOrDoubleTapGestureRecognizer) {
         switch recognizer.state {
         case .ended:
             if let (gesture, location) = recognizer.lastRecognizedGestureAndLocation, let item = self.item {
+                if case .doubleTap = gesture, self.vantagramPerformDoubleTap(item: item) {
+                    self.mainContainerNode.cancelGesture()
+                    return
+                }
                 if let action = self.gestureRecognized(gesture: gesture, location: location, recognizer: nil) {
                     if case .doubleTap = gesture {
                         self.mainContainerNode.cancelGesture()

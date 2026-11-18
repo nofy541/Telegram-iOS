@@ -311,6 +311,7 @@ private protocol ItemLayer: SparseItemGridLayer {
     func updateDuration(duration: Int32?, isLivePhoto: Bool, isMin: Bool, minFactor: CGFloat)
     func updateSelection(theme: CheckNodeTheme, isSelected: Bool?, animated: Bool)
     func updateHasSpoiler(hasSpoiler: Bool)
+    func updateMonthLabel(_ text: String?)
     
     func bind(item: VisualMediaItem)
     func unbind()
@@ -368,6 +369,41 @@ private final class GenericItemLayer: CALayer, ItemLayer {
 
     func bind(item: VisualMediaItem) {
         self.item = item
+    }
+
+    private var monthLabelLayer: CATextLayer?
+
+    /// Vantagram: month caption on the first item of each month.
+    func updateMonthLabel(_ text: String?) {
+        guard let text = text else {
+            if let monthLabelLayer = self.monthLabelLayer {
+                self.monthLabelLayer = nil
+                monthLabelLayer.removeFromSuperlayer()
+            }
+            return
+        }
+        let labelLayer: CATextLayer
+        if let current = self.monthLabelLayer {
+            labelLayer = current
+        } else {
+            labelLayer = CATextLayer()
+            labelLayer.contentsScale = UIScreenScale
+            labelLayer.alignmentMode = .center
+            labelLayer.foregroundColor = UIColor.white.cgColor
+            labelLayer.backgroundColor = UIColor(white: 0.0, alpha: 0.55).cgColor
+            labelLayer.cornerRadius = 8.0
+            self.addSublayer(labelLayer)
+            self.monthLabelLayer = labelLayer
+        }
+        let font = UIFont(name: "HelveticaNeue-Medium", size: 11.0) ?? UIFont.systemFont(ofSize: 11.0, weight: .semibold)
+        let textWidth = ceil((text as NSString).size(withAttributes: [.font: font]).width)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        labelLayer.font = CTFontCreateWithName(font.fontName as CFString, 11.0, nil)
+        labelLayer.fontSize = 11.0
+        labelLayer.string = text
+        labelLayer.frame = CGRect(x: 4.0, y: 4.0, width: min(textWidth + 14.0, max(0.0, self.bounds.width - 8.0)), height: 16.0)
+        CATransaction.commit()
     }
 
     func updateDuration(duration: Int32?, isLivePhoto: Bool, isMin: Bool, minFactor: CGFloat) {
@@ -686,6 +722,9 @@ private final class SparseItemGridBindingImpl: SparseItemGridBinding, ListShimme
     var updateShimmerLayersImpl: ((SparseItemGridDisplayItem) -> Void)?
     
     var revealedSpoilerMessageIds = Set<MessageId>()
+    
+    /// Vantagram: all loaded items in index order, used to find the first item of each month.
+    var vantagramLoadedItems: [SparseItemGrid.Item] = []
 
     private var shimmerImages: [CGFloat: UIImage] = [:]
 
@@ -1007,9 +1046,38 @@ private final class SparseItemGridBindingImpl: SparseItemGridBinding, ListShimme
                     layer.updateSelection(theme: self.checkNodeTheme, isSelected: nil, animated: false)
                 }
                 
+                layer.updateMonthLabel(self.vantagramMonthLabel(for: item))
                 layer.bind(item: item)
             }
         }
+    }
+
+    /// Vantagram: returns the month caption when `item` is the first item of its month.
+    private func vantagramMonthLabel(for item: VisualMediaItem) -> String? {
+        if !VantagramUI.mediaMonthLabels {
+            return nil
+        }
+        if item.index == 0 {
+            return self.scrollerTextForTag(tag: item.tag)
+        }
+        let previousIndex = item.index - 1
+        var low = 0
+        var high = self.vantagramLoadedItems.count - 1
+        while low <= high {
+            let middle = (low + high) / 2
+            let candidate = self.vantagramLoadedItems[middle]
+            if candidate.index == previousIndex {
+                if candidate.tag != item.tag {
+                    return self.scrollerTextForTag(tag: item.tag)
+                }
+                return nil
+            } else if candidate.index < previousIndex {
+                low = middle + 1
+            } else {
+                high = middle - 1
+            }
+        }
+        return nil
     }
 
     func unbindLayer(layer: SparseItemGridLayer) {
@@ -1851,6 +1919,7 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
     
     private func updateHistory(items: SparseItemGrid.Items, synchronous: Bool, crossfade: Bool) {
         self.items = items
+        self.itemGridBinding.vantagramLoadedItems = items.items
 
         if let (size, topInset, sideInset, bottomInset, deviceMetrics, visibleHeight, isScrollingLockedAtTop, expandProgress, navigationHeight, presentationData) = self.currentParams {
             var gridSnapshot: UIView?

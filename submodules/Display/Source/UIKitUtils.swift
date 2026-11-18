@@ -39,6 +39,115 @@ public enum VantagramUI {
         UserDefaults.standard.set(!value, forKey: glassKey)
     }
 
+    // MARK: Custom design. All values are read once at launch and applied after the app is restarted.
+
+    private static func storedDouble(_ key: String, _ fallback: Double) -> Double {
+        if let value = UserDefaults.standard.object(forKey: key) as? Double {
+            return value
+        }
+        return fallback
+    }
+
+    /// Avatar corner radius as a fraction of the avatar size (0.5 is a circle).
+    public static let avatarRadiusFactor: CGFloat = CGFloat(min(0.5, max(0.0, storedDouble("vantagram.design.avatarRadius", 0.5))))
+    /// Main bubble corner radius; a negative value keeps the theme value.
+    public static let bubbleMainRadius: Double = storedDouble("vantagram.design.bubbleRadius", -1.0)
+    public static let bubbleNoTails: Bool = UserDefaults.standard.bool(forKey: "vantagram.design.bubbleNoTails")
+    /// "inherit" follows the interface font.
+    public static let messageFontDesign: String = UserDefaults.standard.string(forKey: "vantagram.design.messageFont") ?? "inherit"
+    public static let chatListAvatarScale: CGFloat = CGFloat(min(1.0, max(0.5, storedDouble("vantagram.design.listAvatarScale", 1.0))))
+    public static let chatListRowPadding: CGFloat = CGFloat(min(14.0, max(2.0, storedDouble("vantagram.design.listRowPadding", 8.0))))
+
+    public static var storedAvatarRadius: Double { return storedDouble("vantagram.design.avatarRadius", 0.5) }
+    public static var storedBubbleRadius: Double { return storedDouble("vantagram.design.bubbleRadius", -1.0) }
+    public static var storedBubbleNoTails: Bool { return UserDefaults.standard.bool(forKey: "vantagram.design.bubbleNoTails") }
+    public static var storedMessageFont: String { return UserDefaults.standard.string(forKey: "vantagram.design.messageFont") ?? "inherit" }
+    public static var storedListAvatarScale: Double { return storedDouble("vantagram.design.listAvatarScale", 1.0) }
+    public static var storedListRowPadding: Double { return storedDouble("vantagram.design.listRowPadding", 8.0) }
+
+    public static func setDesignDouble(_ key: String, _ value: Double) {
+        UserDefaults.standard.set(value, forKey: "vantagram.design." + key)
+    }
+
+    public static func setDesignBool(_ key: String, _ value: Bool) {
+        UserDefaults.standard.set(value, forKey: "vantagram.design." + key)
+    }
+
+    public static func setMessageFont(_ value: String) {
+        UserDefaults.standard.set(value, forKey: "vantagram.design.messageFont")
+    }
+
+    /// Applies a font design ("rounded", "serif", "monospaced") to a system font; any other value returns it unchanged.
+    public static func applyFontDesign(_ font: UIFont, design: String) -> UIFont {
+        let systemDesign: UIFontDescriptor.SystemDesign
+        switch design {
+        case "rounded":
+            systemDesign = .rounded
+        case "serif":
+            systemDesign = .serif
+        case "monospaced":
+            systemDesign = .monospaced
+        case "default":
+            systemDesign = .default
+        default:
+            return font
+        }
+        if let descriptor = font.fontDescriptor.withDesign(systemDesign) {
+            return UIFont(descriptor: descriptor, size: font.pointSize)
+        }
+        return font
+    }
+
+    // MARK: Chat list swipe actions that the user chose to hide (applied after a restart).
+
+    /// Raw values of `RevealOptionKey` in ChatListUI: pin 0, unpin 1, mute 2, unmute 3, delete 4, archive 8, unarchive 9.
+    public static let hiddenSwipeKeys: Set<Int32> = {
+        var result = Set<Int32>()
+        let defaults = UserDefaults.standard
+        if defaults.bool(forKey: "vantagram.gesture.hideMute") {
+            result.insert(2)
+            result.insert(3)
+        }
+        if defaults.bool(forKey: "vantagram.gesture.hideDelete") {
+            result.insert(4)
+        }
+        if defaults.bool(forKey: "vantagram.gesture.hideArchive") {
+            result.insert(8)
+            result.insert(9)
+        }
+        if defaults.bool(forKey: "vantagram.gesture.hidePin") {
+            result.insert(0)
+            result.insert(1)
+        }
+        return result
+    }()
+
+    /// Month captions on the first item of each month in the shared media grid (read live).
+    public static var mediaMonthLabels: Bool {
+        return !UserDefaults.standard.bool(forKey: "vantagram.ui.noMediaMonthLabels")
+    }
+
+    public static func setMediaMonthLabels(_ value: Bool) {
+        UserDefaults.standard.set(!value, forKey: "vantagram.ui.noMediaMonthLabels")
+    }
+
+    /// Action of a double tap on a message: "reaction" (as in Telegram), "reply", "copy" or "none".
+    public static var doubleTapAction: String {
+        return UserDefaults.standard.string(forKey: "vantagram.gesture.doubleTap") ?? "reaction"
+    }
+
+    public static func setDoubleTapAction(_ value: String) {
+        UserDefaults.standard.set(value, forKey: "vantagram.gesture.doubleTap")
+    }
+
+    public static func gestureFlag(_ name: String) -> Bool {
+        return UserDefaults.standard.bool(forKey: "vantagram.gesture." + name)
+    }
+
+    public static func setGestureFlag(_ name: String, _ value: Bool) {
+        UserDefaults.standard.set(value, forKey: "vantagram.gesture." + name)
+    }
+
     private static let appSwitcherBlurKey = "vantagram.ui.appSwitcherBlur"
 
     /// Blur the screen content while the app is inactive (hides it in the app switcher).

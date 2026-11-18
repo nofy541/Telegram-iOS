@@ -185,4 +185,39 @@ public enum VantagramGhost {
     public static func setHideOnline(_ value: Bool) {
         UserDefaults.standard.set(value, forKey: hideOnlineKey)
     }
+
+    // MARK: Local visuals. These values only change what is shown on this device.
+
+    private static let localStarsBonusKey = "vantagram.local.starsBonus"
+    private static let localGiftIdsKey = "vantagram.local.giftIds"
+
+    /// Stars added on top of the real balance in the interface. The real balance is not touched.
+    public static var localStarsBonus: Int64 {
+        if let value = UserDefaults.standard.object(forKey: localStarsBonusKey) as? Int64, value > 0 {
+            return value
+        }
+        return 0
+    }
+
+    public static func setLocalStarsBonus(_ value: Int64) {
+        UserDefaults.standard.set(max(0, value), forKey: localStarsBonusKey)
+    }
+
+    /// Ids of catalog gifts that the user gave to themselves locally.
+    public static var localGiftIds: [Int64] {
+        guard let text = UserDefaults.standard.string(forKey: localGiftIdsKey), !text.isEmpty else {
+            return []
+        }
+        var result: [Int64] = []
+        for part in text.split(separator: ",") {
+            if let value = Int64(part) {
+                result.append(value)
+            }
+        }
+        return result
+    }
+
+    public static func setLocalGiftIds(_ value: [Int64]) {
+        UserDefaults.standard.set(value.map { String($0) }.joined(separator: ","), forKey: localGiftIdsKey)
+    }
 }
